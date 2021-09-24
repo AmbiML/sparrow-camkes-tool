@@ -33,7 +33,6 @@ from capdl.Allocator import RenderState
 from camkes.internal.exception import CAmkESError
 import camkes.internal.log as log
 from camkes.templates import TemplateError
-from simpleeval import simple_eval
 
 import yaml
 
