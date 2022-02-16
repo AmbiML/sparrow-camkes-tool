@@ -1,0 +1,285 @@
+/*
+ * Copyright 2017, Data61
+ * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
+ * ABN 41 687 119 230.
+ *
+ * This software may be distributed and modified according to the terms of
+ * the BSD 2-Clause license. Note that NO WARRANTY is provided.
+ * See "LICENSE_BSD2.txt" for details.
+ *
+ * @TAG(DATA61_BSD)
+ */
+
+import "camkes-hardware.idl4";
+import "gdb-delegate.camkes";
+
+/**
+ * @file
+ *
+ * This file defines a list of connectors. A connection is an instance of a
+ * connector, allowing two components to communicate with each other.
+ * Different connectors are used for different purposes.
+ *
+ * In essence, a connector defines how exactly a component connects to another
+ * component. There are two parts, from and to. Most of the connectors are
+ * defined such that the "from" component sends data to the "to" component. So
+ * the "from" component is more like a sender and the "to" component is like a
+ * receiver. Having said that, a totally different semantic can be implemented.
+ * It's really up to the programmer to decide it.
+ *
+ * To use the connector, you define it like this:
+ *
+ *    connection RPC util_fatfs_FS(from util.fs, to fatfs.fs);
+ *
+ * where the util_fatfs_FS connection is an instance of the RPC connector. It
+ * connects util.fs interface to fatfs.fs interface.
+ */
+
+/**
+ * Asynchronous event connector
+ *
+ * Once the connection has been established, the consumer could wait for
+ * asynchronous signal sending from the emitter. The waiting process can be
+ * blocked or non-blocked. The sending process is non-blocked, that is the
+ * emitter can send data at any time and at any rate.
+ *
+ * One of the advantages of this connector is if the consumer executes much
+ * faster than the emitter. The consumer could do other stuff while waiting for
+ * the asynchronous signal from the emitter. However it's harder to synchronize
+ * the components.
+ */
+connector seL4Notification {
+    from Event with 0 threads;
+    to Events;
+    attribute string isabelle_connector_spec = "seL4Notification"; /* builtin connector */
+}
+connector seL4NotificationBind {
+    from Events with 0 threads;
+    to Event;
+}
+connector seL4NotificationQueue {
+    from Event with 0 threads;
+    to Events;
+}
+connector seL4NotificationNative {
+    from Events with 0 threads;
+    to Event;
+}
+
+/**
+ * Asynchronous RPC event connector
+ *
+ * This connector works exactly the same as the asynchronous event connector.
+ * The consumer and emitter shouldn't notice any difference. But the internal
+ * implementation is different. seL4Notification uses the asynchronous
+ * mechanism to send signal, whereas seL4RPCEvent uses the regular RPC
+ * to send and imitate the event signal.
+ */
+connector seL4RPCEvent {
+    from Event;
+    to Event;
+}
+
+/**
+ * RPC connector
+ *
+ * Once the connection has been established, the user could wait for regular
+ * RPC signal sending from the provider. The sending and waiting phase are
+ * blocked.
+ */
+connector seL4RPCCall {
+    from Procedures with 0 threads;
+    to Procedure;
+    attribute string isabelle_connector_spec = "seL4RPC"; /* builtin connector */
+}
+
+/* Same as seL4RPCCall, except has relaxed type checking */
+connector seL4RPCCallNoType {
+    from Procedures with 0 threads;
+    to Procedure;
+    attribute bool disable_interface_type_checking = true;
+    attribute string isabelle_connector_spec = "seL4RPC"; /* builtin connector */
+}
+
+/**
+ * Direct Call connector
+ *
+ * Situates both components in the same protection domain, so that interface
+ * calls are backed by function calls, rather than RPCs.
+ */
+connector seL4DirectCall {
+    from Procedure;
+    to Procedure;
+    attribute string isabelle_connector_spec = "seL4RPC"; /* builtin connector */
+}
+
+/**
+ * Dataport connector
+ *
+ * This connector allows memory sharing between two components.
+ *
+ * The dataport size is not defined in this connector, it's up to the
+ * implementation.
+ */
+connector seL4SharedData {
+    from Dataports with 0 threads;
+    to Dataports with 0 threads;
+    attribute string isabelle_connector_spec = "seL4SharedData"; /* builtin connector */
+}
+
+/**
+ * Hardware MMIO dataport connector
+ *
+ * This connector has special behaviour: it designates the component on the
+ * hardware_component_data side as fictitious, and represents a hardware
+ * device. Code will therefore not be generated for that component.
+ *
+ * It also implies that the backing memory will be mapped uncached.
+ *
+ * The hardware_component_data dataport's attribute string should consist of
+ * the physical address and size of the memory window, in the following format:
+ * "0x<address>:0x<size>"
+ */
+connector seL4HardwareMMIO {
+    from Dataports with 0 threads;
+    to hardware Dataport;
+    attribute string isabelle_connector_spec = "seL4HardwareMMIO"; /* builtin connector */
+}
+
+/**
+ * Hardware interrupt event connector
+ *
+ * This connector has special behaviour: it designates the component on the
+ * hardware_component_interrupt side as fictitious, and represents a hardware
+ * device. Code will therefore not be generated for that component.
+ *
+ * The hardware_component_interrupt event's attribute string should consist of
+ * the interrupt number, in either decimal or (with the "0x" prefix)
+ * hexadecimal.
+ */
+connector seL4HardwareInterrupt {
+    from hardware Event;
+    to Event;
+    attribute string isabelle_connector_spec = "seL4HardwareInterrupt"; /* builtin connector */
+}
+connector seL4IOAPICHardwareInterrupt {
+    from hardware Event;
+    to Event;
+}
+
+/**
+ * Hardware IOPorts connector
+ *
+ * This connector has special behaviour: it designates the component on the
+ * hardware_component_data side as fictitious, and represents a hardware
+ * device. Code will therefore not be generated for that component.
+ *
+ * Note that by nature, this connector is ia32-specific.
+ *
+ * The attribute 'hardware_component_port_attributes' should be set to define the
+ * the IOPort range needed, in the following format: "0x<first_port>:0x<last_port>".
+ * The interface provided should be "IOPort". E.g.
+ *  component foo {
+ *      hardware;
+ *      provides IOPort bar;
+ *  }
+ *  assembly {
+ *      composition {
+ *          component foo f;
+ *          ...
+ *          connection HardwareIOPort moo(from ..., to foo.bar);
+ *      }
+ *      configuration {
+ *          foo.bar_attributes = "0x42:0x84";
+ *      }
+ *  }
+ */
+connector seL4HardwareIOPort {
+    from Procedure with 0 threads;
+    to hardware Procedure;
+}
+
+/**
+ * DTB hardware connector
+ *
+ * This connector allows a user to automatically generate the resources needed to
+ * interact with a device. This includes memory-mapped hardware registers and interrupts.
+ * It does so by reading from a specified DTB node.
+
+ * To use this connector, a dummy 'emits' interface needs to be created. For each 
+ * pair of hardware registers and/or interrupts, you wish to initialise, a 'consumes'
+ * interface needs to be created and paired with the dummy source. E.g.
+ *  
+ *  consumes Dummy timer;
+ *  consumes Dummy serial;
+ *  emits Dummy dummy_source;
+ *      ...
+ *  connection seL4DTBHardware timer_conn(from dummy_source, to timer);
+ *  connection seL4DTBHardware timer_conn(from dummy_source, to serial);
+ * 
+ * To pass in a DTB node to the connector, the attribute 'dtb' of the 'consumes' 
+ * interface must be set to the DTB path of a particular node. E.g.
+ *
+ *  timer.dtb = dtb({ "path" : "/soc/serial@deadbeef" });
+ * 
+ * Interrupts will not be generated by default. To generate interrupts, set the
+ * 'generate_interrupts' attribute of the 'consumes' interface to equal to '1'. E.g.
+ * 
+ *  timer.generate_interrupts = 1;
+ *
+ * Warning: The connector currently assumes that the `interrupts` binding in the DTB
+ * node follow the format of the ARM GIC, i.e. cell 1 = SPI interrupt, 
+ * cell 2 = interrupt number and cell 3 = interrupt flag.
+ *
+ */
+connector seL4DTBHardware {
+    from Event with 0 threads;
+    to Events;
+
+    /* This connector by itself confers no access rights. Use other
+     * attributes to specify integrity policy for hardware. */
+    attribute string isabelle_connector_spec = "\<lparr>
+        connector_type = NativeConnector,
+        connector_interface = EventInterface,
+        connector_access = \<lparr>
+            access_from_to   = {},
+            access_to_from   = {},
+            access_from_from = {},
+            access_to_to     = {},
+            access_from_conn = {},
+            access_to_conn   = {}
+        \<rparr> \<rparr>";
+}
+
+connector seL4DTBHW {
+    from hardware Event;
+    to Events;
+}
+
+connector seL4InitHardware {
+    from Event with 0 threads;
+    to Events with 0 threads;
+}
+
+/**
+ * Dataport connector
+ *
+ * This connector defines a shared DMA pool between multiple components.
+ *
+ * Supported config options:
+ *
+ * Connector instance level:
+ * paddr: Specify a physical address for the Pool to start at. Default: Any
+ * size: Specify the size of the pool.  Default: 4096
+ * controller: Identify the interface instance that is allowed to make allocations.
+ *
+ * Interface instance level:
+ * %{interface_name}_cached: Cache attributes of the pool's mapping. Default: True
+ * %{interface_name}_access: Memory permissions of the pool's mapping. Default: RWXP (All)
+ *
+ */
+connector seL4DMASharedData {
+    from Dataports with 0 threads;
+    to Dataports with 0 threads;
+    attribute string isabelle_connector_spec = "seL4SharedData"; /* builtin connector */
+}

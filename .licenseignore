@@ -1,0 +1,12 @@
+.gitignore
+.git/**
+.github/**
+VERSION
+CHANGES
+.licenseignore
+**LICENSE_BSD2.txt
+**/.gitignore
+*.png
+*.sql
+*.dtb
+object_sizes.yaml
