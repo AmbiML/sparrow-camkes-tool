@@ -27,7 +27,7 @@ from camkes.internal.seven import cmp, filter, map, zip
 
 from camkes.ast import Assembly, Attribute, AttributeReference, Component, \
     Composition, Configuration, Connection, ConnectionEnd, Connector, \
-    Consumes, Dataport, DictLookup, Emits, Export, Group, Include, Instance, Interface, \
+    Consumes, CopyRegion, Dataport, DictLookup, Emits, Export, Group, Include, Instance, Interface, \
     LiftedAST, Method, Mutex, normalise_type, Parameter, Procedure, Provides, \
     Reference, Semaphore, BinarySemaphore, QueryObject, Setting, SourceLocation, Uses, Struct
 from .base import Parser
@@ -240,6 +240,7 @@ def _lift_component_decl(location, *args):
                      attributes=component_defn.attributes, mutexes=component_defn.mutexes,
                      semaphores=component_defn.semaphores,
                      binary_semaphores=component_defn.binary_semaphores,
+                     copyregions=component_defn.copyregions,
                      composition=component_defn.composition,
                      configuration=component_defn.configuration, location=location)
 
@@ -263,6 +264,7 @@ def _lift_component_defn(location, *args):
                      mutexes=[x for x in args if isinstance(x, Mutex)],
                      semaphores=[x for x in args if isinstance(x, Semaphore)],
                      binary_semaphores=[x for x in args if isinstance(x, BinarySemaphore)],
+                     copyregions=[x for x in args if isinstance(x, CopyRegion)],
                      composition=composition, configuration=configuration,
                      location=location)
 
@@ -688,6 +690,19 @@ def _lift_binary_semaphore(location, id):
     return BinarySemaphore(id, location)
 
 
+def _lift_copyregion(location, *args):
+    if len(args) == 2:
+        name, size = args
+        return CopyRegion(name, size, location)
+    else:
+        # XXX use pagesize?
+        return CopyRegion(args[0], 4096, location)
+
+
+def _lift_copyregion_size(location, arg):
+    return arg
+
+
 def _lift_setting(location, id, id2, item):
     item = strip_quotes(item)
     return Setting(id, id2, item, location)
@@ -838,6 +853,8 @@ LIFT = {
     'reference': _lift_reference,
     'semaphore': _lift_semaphore,
     'binary_semaphore': _lift_binary_semaphore,
+    'copyregion': _lift_copyregion,
+    'copyregion_size': _lift_copyregion_size,
     'setting': _lift_setting,
     'signed_char': _lift_signed_char,
     'signed_int': _lift_signed_int,

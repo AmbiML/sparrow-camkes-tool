@@ -609,17 +609,19 @@ class Struct(ASTObject):
               all(isinstance_fallback(x, "Semaphore") for x in s))
 @ast_property("binary_semaphores", lambda b: isinstance(b, (list, tuple)) and
               all(isinstance_fallback(x, "BinarySemaphore") for x in b))
+@ast_property("copyregions", lambda c: isinstance(c, (list, tuple)) and
+              all(isinstance_fallback(x, "CopyRegion") for x in c))
 @ast_property("composition", Composition)
 @ast_property("configuration", Configuration)
 class Component(MapLike):
     child_fields = ('attributes', 'includes', 'provides', 'uses', 'emits',
-                    'consumes', 'dataports', 'mutexes', 'semaphores', 'binary_semaphores', 'composition',
-                    'configuration')
+                    'consumes', 'dataports', 'mutexes', 'semaphores', 'binary_semaphores', 'copyregions',
+                    'composition', 'configuration')
 
     def __init__(self, name=None, includes=None, control=False, hardware=False,
                  provides=None, uses=None, emits=None, consumes=None, dataports=None,
-                 attributes=None, mutexes=None, semaphores=None, binary_semaphores=None, composition=None,
-                 configuration=None, location=None):
+                 attributes=None, mutexes=None, semaphores=None, binary_semaphores=None, copyregions=None,
+                 composition=None, configuration=None, location=None):
         super(Component, self).__init__(location)
         self.name = name
         self.includes = list(includes or [])
@@ -634,6 +636,7 @@ class Component(MapLike):
         self.mutexes = list(mutexes or [])
         self.semaphores = list(semaphores or [])
         self.binary_semaphores = list(binary_semaphores or [])
+        self.copyregions = list(copyregions or [])
         if composition is not None:
             self.composition = composition
         else:
@@ -655,6 +658,7 @@ class Component(MapLike):
         [self.adopt(m) for m in self.mutexes]
         [self.adopt(s) for s in self.semaphores]
         [self.adopt(b) for b in self.binary_semaphores]
+        [self.adopt(b) for b in self.copyregions]
         if self.composition is not None:
             self.adopt(self.composition)
         if self.configuration is not None:
@@ -775,6 +779,15 @@ class BinarySemaphore(ASTObject):
     def __init__(self, name, location=None):
         super(BinarySemaphore, self).__init__(location)
         self.name = name
+
+
+@ast_property("name", six.string_types)
+@ast_property("size", lambda x: isinstance(x, six.integer_types) and x >= 0)
+class CopyRegion(ASTObject):
+    def __init__(self, name, size, location=None):
+        super(CopyRegion, self).__init__(location)
+        self.name = name
+        self.size = size
 
 
 @ast_property("name", lambda x: x is None or isinstance(x, six.string_types))
