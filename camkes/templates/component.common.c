@@ -96,6 +96,16 @@ const unsigned char RECV_CNODE_DEPTH = 5;
     /*- do my_cnode.__setattr__('headroom', 80) -*/
 /*- endif -*/
 
+/*- set cnode_headroom = configuration[me.address_space].get('cnode_headroom') -*/
+/*- if cnode_headroom -*/
+        /*- if isinstance(cnode_headroom, six.string_types) -*/
+            /*- set headroom = int(cnode_headroom, 0) -*/
+        /*- else -*/
+            /*- set headroom = cnode_headroom -*/
+        /*- endif -*/
+    /*- do my_cnode.__setattr__('headroom', headroom) -*/
+/*- endif -*/
+
 /*- set cnode_size = configuration[me.address_space].get('cnode_size_bits') -*/
 /*- if cnode_size -*/
         /*- if isinstance(cnode_size, six.string_types) -*/
