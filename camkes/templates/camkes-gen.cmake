@@ -294,6 +294,9 @@ RequireFile(CONFIGURE_FILE_SCRIPT configure_file.cmake PATHS ${CMAKE_MODULE_PATH
     /*- if configuration[i.name].get('rump_config') -*/
         CAmkESGen("${generated_dir}/camkes.rumprun.c" component//*? i.name ?*/ component.rumprun.c SOURCE C_STYLE)
     /*- endif -*/
+    /*- if configuration[i.name].get('kataos') -*/
+        CAmkESGen("${generated_dir}/camkes.kataos.c" component//*? i.name ?*/ component.kataos.c SOURCE C_STYLE)
+    /*- endif -*/
 
     # Add interface header files to camkes.h
     file(WRITE "${generated_dir}/include/camkes.h.cmd" "${CMAKE_COMMAND} -DCONFIGURE_INPUT_FILE=\"${generated_dir}/include/camkes.h.in\" \
