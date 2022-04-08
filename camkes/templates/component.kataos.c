@@ -30,10 +30,9 @@
 const seL4_CPtr SELF_CNODE = /*? self_cnode ?*/;
 /*- set self_pd = alloc_cap('pd', my_pd, write=true) -*/
 const seL4_CPtr SELF_VSPACE_ROOT = /*? self_pd ?*/;
-/*# TODO(sleffler): move to connector #*/
 /*- set recv_cnode = alloc('recv_cnode', seL4_CapTableObject, size_bits=5) -*/
-const seL4_CPtr RECV_CNODE = /*? recv_cnode ?*/;
-const unsigned char RECV_CNODE_DEPTH = 5;
+const seL4_CPtr MEMORY_RECV_CNODE = /*? recv_cnode ?*/;
+const unsigned char MEMORY_RECV_CNODE_DEPTH = 5;
 
 /*# Arrange to receive the BootInfo frame that comes with the UntypedMemory caps. #*/
 /*- if configuration[me.name].get('untyped_memory', False) -*/
