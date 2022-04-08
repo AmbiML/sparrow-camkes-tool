@@ -34,6 +34,30 @@ const seL4_CPtr SELF_VSPACE_ROOT = /*? self_pd ?*/;
 const seL4_CPtr MEMORY_RECV_CNODE = /*? recv_cnode ?*/;
 const unsigned char MEMORY_RECV_CNODE_DEPTH = 5;
 
+ /*- set threads = macros.threads(composition, me, configuration[me.name], options) -*/
+ /*- for t in threads -*/
+     /*- set tcb = alloc('%s_tcb' % t.name, seL4_TCBObject) -*/
+     const seL4_CPtr SELF_TCB_/*? t.name.upper() ?*/ = /*? tcb ?*/;
+ /*- endfor -*/
+
+
+/*# Hand-off caps to ProcessManager for constructing applications. #*/
+/*# Beware the rootserver has the location of these caps builtin. #*/
+/*- if configuration[me.name].get('asid_pool', False) -*/
+    /*- set asid_pool = alloc('asid_pool', type=seL4_ASID_Pool) -*/
+    const seL4_CPtr ASID_POOL = /*? asid_pool ?*/;
+/*- endif -*/
+/*- if configuration[me.name].get('domain_ctrl', False) -*/
+    /*- set domain_ctrl = alloc('domain', type=seL4_DomainControl, core=configuration[me.name].get('domain_ctrl')) -*/
+    const seL4_CPtr DOMAIN_CTRL = /*? domain_ctrl ?*/;
+/*- endif -*/
+/*- if options.realtime -*/
+/*- if configuration[me.name].get('sched_ctrl', False) -*/
+    /*- set sched_ctrl = alloc('sched_control', type=seL4_SchedControl, core=configuration[me.name].get('sched_ctrl')) -*/
+    const seL4_CPtr SCHED_CTRL = /*? sched_ctrl ?*/;
+/*- endif -*/
+/*- endif -*/
+
 /*# Arrange to receive the BootInfo frame that comes with the UntypedMemory caps. #*/
 /*- if configuration[me.name].get('untyped_memory', False) -*/
     /*# Setup a page for the loader to copy the BootInfo into #*/
