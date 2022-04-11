@@ -216,7 +216,7 @@
 
     /*# Allocate reply cap #*/
     /*- if options.realtime -*/
-            /*- set namespace.reply_cap_slot = alloc('reply_cap_slot', seL4_RTReplyObject) -*/
+            /*- set namespace.reply_cap_slot = alloc('reply_cap_slot', seL4_RTReplyObject, write=True, grant=True) -*/
     /*- else -*/
         /*- if me.might_block() -*/
             /*# We're going to need a CNode cap in order to save our pending reply
@@ -307,7 +307,7 @@
 /*- macro reply_recv(namespace, length, size, might_block, namespace_prefix='') -*/
     /*- if namespace.language == 'c' -*/
         /*-- set info = "%sinfo" % namespace_prefix -*/
-        seL4_MessageInfo_t /*? info ?*/ = seL4_MessageInfo_new(0, 0, 0, /* length */
+        seL4_MessageInfo_t /*? info ?*/ = seL4_MessageInfo_new(0, 0, 1, /* length */
             /*-- if namespace.userspace_ipc --*/
                 0
             /*-- else --*/
