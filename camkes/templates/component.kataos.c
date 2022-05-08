@@ -21,6 +21,8 @@
 #include <sel4/sel4.h>
 #include <sel4utils/mapping.h>
 
+/*? assert(configuration[me.name].get('kataos')) ?*/
+
 /*- macro next_pow2(val) -*/
     /*? pow(2, val.bit_length()) ?*/
 /*- endmacro -*/
