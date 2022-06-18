@@ -334,10 +334,27 @@
                                                     namespace.reply_cap_slot) ?*/;
             }
         /*-- elif options.realtime -*/
-            /*? info ?*/ = /*? generate_seL4_ReplyRecv(options, namespace.ep,
+#ifdef CAP_RELEASE
+            seL4_CPtr cap = seL4_GetCap(0);
+            if (cap & CAP_RELEASE) {
+                extern seL4_CPtr SELF_CNODE;
+                cap &= ~CAP_RELEASE;
+                /* Release the attached capability after sending the reply */
+                seL4_SetCap(0, cap);
+                /*? info ?*/ = /*? generate_seL4_ReplyRecv(options, namespace.ep,
                                                     info,
                                                     '&%s' % namespace.badge_symbol,
                                                     namespace.reply_cap_slot) ?*/;
+                (void) seL4_CNode_Delete(SELF_CNODE, cap, seL4_WordBits);
+            } else {
+#endif /* CAP_RELEASE */
+                /*? info ?*/ = /*? generate_seL4_ReplyRecv(options, namespace.ep,
+                                                    info,
+                                                    '&%s' % namespace.badge_symbol,
+                                                    namespace.reply_cap_slot) ?*/;
+#ifdef CAP_RELEASE
+            }
+#endif /* CAP_RELEASE */
         /*-- else -*/
             /*? info ?*/ = /*? generate_seL4_ReplyRecv(options, namespace.ep,
                                                     info,
