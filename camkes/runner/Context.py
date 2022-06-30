@@ -35,7 +35,7 @@ import itertools
 import functools
 import numbers
 import \
-    orderedset, os, pdb, re, six, sys, textwrap, math
+    ordered_set, os, pdb, re, six, sys, textwrap, math
 from capdl.Object import ObjectType, ObjectRights, ARMIRQMode
 from capdl.Allocator import Cap
 from capdl import page_sizes
@@ -175,7 +175,7 @@ def new_context(entity, assembly, render_state, state_key, outfile_name,
                 'raise': _raise,
                 're': re,
                 'six': six,
-                'set': orderedset.OrderedSet,
+                'set': ordered_set.OrderedSet,
                 'textwrap': textwrap,
                 'copy': copy,
                 'zip': zip,
@@ -552,7 +552,7 @@ def get_shared_variable_backing_frames(obj_space, global_name, size, frame_size=
 
 def register_fill_frame(addr_space, symbol, fill, size, obj_space, label):
     '''
-    Take a symbol and create a collection of 4K frames that can comfortably store 
+    Take a symbol and create a collection of 4K frames that can comfortably store
     a region in the bootinfo.
 
     Return a static_assert checking that the symbol is of the correct size
