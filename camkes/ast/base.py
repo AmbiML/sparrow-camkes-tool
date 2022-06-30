@@ -223,7 +223,9 @@ class ASTObject(six.with_metaclass(abc.ABCMeta, object)):
     def label(self):
         return None
 
-class MapLike(six.with_metaclass(abc.ABCMeta, ASTObject, collections.Mapping)):
+
+class MapLike(
+        six.with_metaclass(abc.ABCMeta, ASTObject, collections.abc.Mapping)):
 
     no_hash = ASTObject.no_hash + ('_mapping',)
 
