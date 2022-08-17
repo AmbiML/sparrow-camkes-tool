@@ -32,9 +32,10 @@
 const seL4_CPtr SELF_CNODE = /*? self_cnode ?*/;
 /*- set self_pd = alloc_cap('pd', my_pd, write=true) -*/
 const seL4_CPtr SELF_VSPACE_ROOT = /*? self_pd ?*/;
-/*- set recv_cnode = alloc('recv_cnode', seL4_CapTableObject, size_bits=5) -*/
+/*- set recv_cnode_size_bits = 8 -*/
+/*- set recv_cnode = alloc('recv_cnode', seL4_CapTableObject, size_bits=recv_cnode_size_bits) -*/
 const seL4_CPtr MEMORY_RECV_CNODE = /*? recv_cnode ?*/;
-const unsigned char MEMORY_RECV_CNODE_DEPTH = 5;
+const unsigned char MEMORY_RECV_CNODE_DEPTH = /*? recv_cnode_size_bits ?*/;
 
  /*- set threads = macros.threads(composition, me, configuration[me.name], options) -*/
  /*- for t in threads -*/
