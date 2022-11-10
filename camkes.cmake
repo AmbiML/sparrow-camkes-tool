@@ -1,13 +1,7 @@
 #
-# Copyright 2018, Data61
-# Commonwealth Scientific and Industrial Research Organisation (CSIRO)
-# ABN 41 687 119 230.
+# Copyright 2018, Data61, CSIRO (ABN 41 687 119 230)
 #
-# This software may be distributed and modified according to the terms of
-# the BSD 2-Clause license. Note that NO WARRANTY is provided.
-# See "LICENSE_BSD2.txt" for details.
-#
-# @TAG(DATA61_BSD)
+# SPDX-License-Identifier: BSD-2-Clause
 #
 
 cmake_minimum_required(VERSION 3.7.2)
@@ -69,8 +63,9 @@ endfunction(set_camkes_flags_from_config)
 
 function(set_camkes_parser_flags_from_config list)
 
-    # These options are not declared with the config_* system because they only need to exist
-    # in the build system, and not appear in a configuration library
+    # These options are not declared with the config_* system because they only
+    # need to exist in the build system, and not appear in a configuration
+    # library
     set_config_guard(
         CAmkESCPP
         ON
@@ -140,7 +135,8 @@ function(set_camkes_render_flags_from_config list)
         STRING
         "Default priority for component threads if this is not overridden via an
         attribute. Generally you want to set this as high as possible.
-        Defaults to one less than the max priority to avoid interleaving with the CapDL intialiser."
+        Defaults to one less than the max priority to avoid interleaving with
+        the CapDL intialiser."
     )
     if((${CAmkESDefaultPriority} LESS 0) OR (${CAmkESDefaultPriority} GREATER 255))
         message(FATAL_ERROR "CAmkESDefaultPriority must be [0, 255]")
@@ -151,7 +147,8 @@ function(set_camkes_render_flags_from_config list)
         0
         CACHE
         STRING
-        # Default to 0 as this is the index assigned to the BSP (Boot Strap Processor) by seL4
+        # Default to 0 as this is the index assigned to the BSP (Boot Strap
+        # Processor) by seL4
         "Default affinity for component threads if this is not overridden via an
         attribute. Think carefully when organizing your applications for
         multiprocessor operation"
@@ -166,9 +163,9 @@ function(set_camkes_render_flags_from_config list)
         ON
         CACHE
         BOOL
-        "Detect when it is safe to exclude locking operations in the seL4RPC connector and
-        automatically do so. This is an optimisation that can improve the performance of
-        this connector."
+        "Detect when it is safe to exclude locking operations in the seL4RPC
+        connector and automatically do so. This is an optimisation that can
+        improve the performance of this connector."
     )
 
     set_config_guard(
@@ -250,10 +247,15 @@ set_config_guard(
     matching the platform will be found in seL4/tools."
 )
 
-set_config_guard(CAmkESCapDLVerification OFF CACHE BOOL "Generate CapDL refinement proofs
-    Generate Isabelle definitions and proofs for CapDL refinement.
-    This verifies that the system's capability distribution conforms to
-    the expected integrity policy of the component assembly.")
+set_config_guard(
+    CAmkESCapDLVerification
+    OFF
+    CACHE
+    BOOL
+    "Generate Isabelle definitions and proofs for CapDL refinement. This
+    verifies that the system's capability distribution conforms to the expected
+    integrity policy of the component assembly."
+)
 
 set_config_guard(
     CAmkESCapDLStaticAlloc
@@ -269,7 +271,8 @@ if((NOT CAmkESCapDLStaticAlloc) AND CAmkESCapDLVerification)
     message(FATAL_ERROR "CAmkESCapDLVerification requires CAmkESCapDLStaticAlloc to be enabled")
 endif()
 
-# Check static allocation options. These should have been propagated correctly by settings.cmake
+# Check static allocation options. These should have been propagated correctly
+# by settings.cmake
 if(CAmkESCapDLStaticAlloc)
     if(NOT CapDLLoaderStaticAlloc)
         message(FATAL_ERROR "CAmkESCapDLStaticAlloc requires CapDLLoaderStaticAlloc to be enabled")
@@ -363,13 +366,14 @@ file(
 
 file(GLOB PYTHON_CAPDL_FILES ${PYTHON_CAPDL_PATH}/capdl/*.py)
 
-# CAmkES defines its own heaps and for this to work muslcsys must not be configured to
-# use a static morecore. We make the morecore dynamic by setting the size to 0
+# CAmkES defines its own heaps and for this to work muslcsys must not be
+# configured to use a static morecore. We make the morecore dynamic by setting
+# the size to 0
 set(LibSel4MuslcSysMorecoreBytes 0 CACHE STRING "" FORCE)
 
-# This is called from the context of a CAmkES application that has decided what the 'root'
-# application is. This function will effectively generate a rule for building the final
-# rootserver image
+# This is called from the context of a CAmkES application that has decided what
+# the 'root' application is. This function will effectively generate a rule for
+# building the final rootserver image
 function(DeclareCAmkESRootserver adl)
     cmake_parse_arguments(
         PARSE_ARGV
@@ -379,8 +383,10 @@ function(DeclareCAmkESRootserver adl)
         "DTS_FILE_PATH" # Single arguments
         "CPP_FLAGS;CPP_INCLUDES" # Multiple arguments
     )
-    # Stash this request as a global property. The main CAmkES build file will call
-    # GenerateCAmkESRootserver later once all the build scripts are processed
+
+    # Stash this request as a global property. The main CAmkES build file will
+    # call GenerateCAmkESRootserver later once all the build scripts are
+    # processed
     get_property(declared GLOBAL PROPERTY CAMKES_ROOT_DECLARED)
     if(declared)
         message(FATAL_ERROR "A CAmkES rootserver was already declared")
@@ -411,9 +417,9 @@ function(DeclareCAmkESRootserver adl)
     set_property(GLOBAL PROPERTY CAMKES_ROOT_DTS_FILE_PATH "${CAMKES_ROOT_DTS_FILE_PATH}")
 endfunction(DeclareCAmkESRootserver)
 
-# Called to actually generate the definitions for the CAmkES rootserver. Due to its
-# use of properties for some configuration it needs to be run after all other build
-# scripts, typically by the main CAmkES build file
+# Called to actually generate the definitions for the CAmkES rootserver. Due to
+# its use of properties for some configuration it needs to be run after all
+# other build scripts, typically by the main CAmkES build file
 function(GenerateCAmkESRootserver)
     # Retrieve properties from the declare call above
     get_property(declared GLOBAL PROPERTY CAMKES_ROOT_DECLARED)
@@ -429,7 +435,8 @@ function(GenerateCAmkESRootserver)
     set(CAMKES_CDL_TARGET "${CMAKE_CURRENT_BINARY_DIR}/${CAMKES_CDL_TARGET}.cdl")
     # Get an absolute reference to the ADL source
     get_absolute_list_source_or_binary(CAMKES_ADL_SOURCE "${adl}")
-    # Declare a common CAMKES_FLAGS that we will need to give to every invocation of camkes
+    # Declare a common CAMKES_FLAGS that we will need to give to every
+    # invocation of camkes
     set(CAMKES_PARSER_FLAGS "--import-path=${CAMKES_TOOL_BUILTIN_DIR}")
 
     if(${CAmkESDTS})
@@ -483,76 +490,115 @@ function(GenerateCAmkESRootserver)
         list(APPEND CAMKES_RENDER_FLAGS --templates "${template}")
     endforeach()
 
-    set(ast_outfile "${CMAKE_CURRENT_BINARY_DIR}/ast.pickle")
-    set(gen_outfile "${CMAKE_CURRENT_BINARY_DIR}/camkes-gen.cmake")
-
-    set(
-        camkes_parse_command
+    set(CAMKES_AST_PICKLE "${CMAKE_CURRENT_BINARY_DIR}/ast.pickle")
+    set(CAMKES_AST_DEP_FILE "${CAMKES_AST_PICKLE}.d")
+    set(extra_dependencies ${CAMKES_TOOL_FILES} ${PYTHON_CAPDL_FILES})
+    execute_process_with_stale_check(
+        "${CAMKES_AST_PICKLE}.cmd"
+        "${CAMKES_AST_DEP_FILE}"
+        "${CAMKES_AST_PICKLE}"
+        "${extra_dependencies}"
+        COMMAND
         ${CAMKES_PARSER_TOOL}
-        --file
-        "${CAMKES_ADL_SOURCE}"
-        "--save-ast=${ast_outfile}"
         ${CAMKES_FLAGS}
         ${CAMKES_PARSER_FLAGS}
+        --makefile-dependencies
+        "${CAMKES_AST_DEP_FILE}"
+        --file
+        "${CAMKES_ADL_SOURCE}"
+        --save-ast
+        "${CAMKES_AST_PICKLE}"
+        WORKING_DIRECTORY
+        "${CMAKE_CURRENT_BINARY_DIR}"
+        INPUT_FILE
+        /dev/stdin
+        OUTPUT_FILE
+        /dev/stdout
+        ERROR_FILE
+        /dev/stderr
+        RESULT_VARIABLE
+        camkes_gen_error
     )
+    if(camkes_gen_error)
+        file(REMOVE ${CAMKES_AST_PICKLE})
+        message(FATAL_ERROR "Failed to generate ${CAMKES_AST_PICKLE}")
+    endif()
 
-    set(
-        camkes_render_command
+    set(CAMKES_CMAKE_FILE "${CMAKE_CURRENT_BINARY_DIR}/camkes-gen.cmake")
+    set(CAMKES_CMAKE_DEP_FILE "${CAMKES_CMAKE_FILE}.d")
+    set(extra_dependencies ${CAMKES_AST_PICKLE} ${CAMKES_TOOL_FILES} ${PYTHON_CAPDL_FILES})
+    execute_process_with_stale_check(
+        "${CAMKES_CMAKE_FILE}.cmd"
+        "${CAMKES_CMAKE_DEP_FILE}"
+        "${CAMKES_CMAKE_FILE}"
+        "${extra_dependencies}"
+        COMMAND
         ${CAMKES_TOOL}
+        ${CAMKES_FLAGS}
+        ${CAMKES_RENDER_FLAGS}
+        --makefile-dependencies
+        "${CAMKES_CMAKE_DEP_FILE}"
         --load-ast
-        "${CMAKE_CURRENT_BINARY_DIR}/ast.pickle"
+        "${CAMKES_AST_PICKLE}"
         --item
         assembly/
         --template
         camkes-gen.cmake
         --outfile
-        "${gen_outfile}"
-        ${CAMKES_FLAGS}
-        ${CAMKES_RENDER_FLAGS}
+        "${CAMKES_CMAKE_FILE}"
+        WORKING_DIRECTORY
+        "${CMAKE_CURRENT_BINARY_DIR}"
+        INPUT_FILE
+        /dev/stdin
+        OUTPUT_FILE
+        /dev/stdout
+        ERROR_FILE
+        /dev/stderr
+        RESULT_VARIABLE
+        camkes_gen_error
     )
-    set(commands camkes_parse_command camkes_render_command)
-    set(outfiles "${ast_outfile}" "${gen_outfile}")
-    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/camkes_gen")
-    foreach(index RANGE 0 1)
-        set(deps_file "${CMAKE_CURRENT_BINARY_DIR}/camkes_gen/deps_${index}")
-        set(invoc_file "${CMAKE_CURRENT_BINARY_DIR}/camkes_gen/last_invocation${index}")
-        list(GET outfiles ${index} outfile)
-        list(GET commands ${index} command)
-        if(index EQUAL 1)
-            list(GET outfiles 0 last_outfile)
-        endif()
-        set(extra_dependencies ${last_outfile} ${CAMKES_TOOL_FILES} ${PYTHON_CAPDL_FILES})
-        execute_process_with_stale_check(
-            "${invoc_file}"
-            "${deps_file}"
-            "${outfile}"
-            "${extra_dependencies}"
-            COMMAND
-            ${${command}}
-            --makefile-dependencies
-            "${deps_file}"
-            INPUT_FILE
-            /dev/stdin
-            OUTPUT_FILE
-            /dev/stdout
-            ERROR_FILE
-            /dev/stderr
-            RESULT_VARIABLE
-            camkes_gen_error
-        )
-        if(camkes_gen_error)
-            file(REMOVE ${outfile})
-            message(FATAL_ERROR "Failed to generate ${outfile}")
-        endif()
-    endforeach()
-    # We set a property to indicate that we have done execute_process (which happens during the
-    # generation phase. This just allows us to do some debugging and detect cases where options
-    # are changed *after* this point that would have affected the execute_process
+    if(camkes_gen_error)
+        file(REMOVE ${CAMKES_CMAKE_FILE})
+        message(FATAL_ERROR "Failed to generate ${CAMKES_CMAKE_FILE}")
+    endif()
+
+    # We set a property to indicate that we have done execute_process (which
+    # happens during the generation phase. This just allows us to do some
+    # debugging and detect cases where options are changed *after* this point
+    # that would have affected the execute_process
     set_property(GLOBAL PROPERTY CAMKES_GEN_DONE TRUE)
-    include("${gen_outfile}")
+    include("${CAMKES_CMAKE_FILE}")
+
 endfunction(GenerateCAmkESRootserver)
 
 # Internal helper function for setting camkes component properties
+# The following common parameters are supported
+#
+#   SOURCES <src1> <src2> ...
+#   INCLUDES <inc1> <inc2> ...
+#   C_FLAGS <flag1> <flag2> ...
+#   CXX_FLAGS <flag1> <flag2> ...
+#   LD_FLAGS <flag1> <flag2> ...
+#   LIBS <lib1> <lib1> ...
+#
+# For CakeML components, these parameters are supported
+#
+#   CAKEML_HEAP_SIZE <val>
+#       sets target propery COMPONENT_CAKEML_HEAP_SIZE
+#
+#   CAKEML_STACK_SIZE <val>
+#       sets target propery COMPONENT_CAKEML_STACK_SIZE
+#
+#   CAKEML_SOURCES <src1> <src2> ...
+#   CAKEML_DEPENDS <dep1> <dep2> ...
+#   CAKEML_INCLUDES<inc1> <inc2> ...
+#
+#   LINKER_LANGUAGE <lng>
+#       sets target propery COMPONENT_LINKER_LANGUAGE
+#
+#   TEMPLATE_SOURCES
+#   TEMPLATE_HEADERS
+#
 function(AppendCAmkESComponentTarget target_name)
     cmake_parse_arguments(
         PARSE_ARGV
@@ -560,7 +606,7 @@ function(AppendCAmkESComponentTarget target_name)
         CAMKES_COMPONENT
         "" # Option arguments
         "CAKEML_HEAP_SIZE;CAKEML_STACK_SIZE;LINKER_LANGUAGE" # Single arguments
-        "SOURCES;CAKEML_SOURCES;CAKEML_DEPENDS;CAKEML_INCLUDES;INCLUDES;C_FLAGS;LD_FLAGS;LIBS;TEMPLATE_SOURCES;TEMPLATE_HEADERS" # Multiple aguments
+        "SOURCES;CAKEML_SOURCES;CAKEML_DEPENDS;CAKEML_INCLUDES;INCLUDES;C_FLAGS;CXX_FLAGS;LD_FLAGS;LIBS;TEMPLATE_SOURCES;TEMPLATE_HEADERS" # Multiple aguments
     )
     # Declare a target that we will set properties on
     if(NOT (TARGET "${target_name}"))
@@ -618,6 +664,11 @@ function(AppendCAmkESComponentTarget target_name)
         TARGET "${target_name}"
         APPEND
         PROPERTY COMPONENT_C_FLAGS "${CAMKES_COMPONENT_C_FLAGS}"
+    )
+    set_property(
+        TARGET "${target_name}"
+        APPEND
+        PROPERTY COMPONENT_CXX_FLAGS "${CAMKES_COMPONENT_CXX_FLAGS}"
     )
     set_property(
         TARGET "${target_name}"
@@ -691,29 +742,34 @@ function(DeclareCAmkESConnector name)
     )
 endfunction(DeclareCAmkESConnector)
 
-# This is called by CAmkES components to declare information needed for the camkes-gen.cmake to
-# actually build them. Can be called multiple times to append additional information.
+# This is called by CAmkES components to declare information needed for the
+# camkes-gen.cmake to actually build them. Can be called multiple times to
+# append additional information.
 function(DeclareCAmkESComponent name)
     AppendCAmkESComponentTarget(CAmkESComponent_${name} ${ARGN})
 endfunction(DeclareCAmkESComponent)
 
-# Declare built-in components that are constructed from templates and have no source files
+# Declare built-in components that are constructed from templates and have no
+# source files
 DeclareCAmkESComponent(debug_server)
 DeclareCAmkESComponent(debug_serial)
 
-# Extend a particular instantiation of a CAmkES component with additional information. This takes
-# similar arguments to DeclareCAmkESComponent and all of the declared includes, flags etc also
-# apply to the sources from DeclareCAmkESComponent. The includes provided here will be passed
-# prior to the original includes allowing for overriding. This can be called multiple times for the
-# same instance to repeatedly extend it. Similar flags will be placed after.
+# Extend a particular instantiation of a CAmkES component with additional
+# information. This takes similar arguments to DeclareCAmkESComponent and all
+# of the declared includes, flags etc also apply to the sources from
+# DeclareCAmkESComponent. The includes provided here will be passed prior to
+# the original includes allowing for overriding. This can be called multiple
+# times for the same instance to repeatedly extend it. Similar flags will be
+# placed after.
 function(ExtendCAmkESComponentInstance component_name instance_name)
     AppendCAmkESComponentTarget(CAmkESComponent_${component_name}_instance_${instance_name} ${ARGN})
 endfunction(ExtendCAmkESComponentInstance)
 
-# Helper function for adding additional import paths. Largely it exists to allow list
-# files to give relative paths and have them automatically expanded to absolute paths
-# We add the import paths to a property, instead of a target, since we need to use
-# it in an `execute_process` above, which cannot take generator expressions
+# Helper function for adding additional import paths. Largely it exists to
+# allow list files to give relative paths and have them automatically expanded
+# to absolute paths We add the import paths to a property, instead of a target,
+# since we need to use it in an `execute_process` above, which cannot take
+# generator expressions
 function(CAmkESAddImportPath)
     # Ensure we haven't generated the camkes-gen.cmake yet
     get_property(is_done GLOBAL PROPERTY CAMKES_GEN_DONE)

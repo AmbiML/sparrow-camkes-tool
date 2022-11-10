@@ -1,13 +1,7 @@
 /*
- * Copyright 2017, Data61
- * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- * ABN 41 687 119 230.
+ * Copyright 2017, Data61, CSIRO (ABN 41 687 119 230)
  *
- * This software may be distributed and modified according to the terms of
- * the BSD 2-Clause license. Note that NO WARRANTY is provided.
- * See "LICENSE_BSD2.txt" for details.
- *
- * @TAG(DATA61_BSD)
+ * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #pragma once
@@ -27,7 +21,11 @@
  *
  * This function is intended to be called by the CAmkES backend and not by a user.
  */
-int camkes_dma_init(void *dma_pool, size_t dma_pool_sz, size_t page_size)
+int camkes_dma_init(
+    void *dma_pool,
+    size_t dma_pool_sz,
+    size_t page_size,
+    bool cached)
 NONNULL(1) WARN_UNUSED_RESULT;
 
 /**
@@ -38,8 +36,11 @@ NONNULL(1) WARN_UNUSED_RESULT;
  *
  * @return Virtual address of allocation or NULL on failure
  */
-void *camkes_dma_alloc(size_t size, int align, bool cached) ALLOC_SIZE(1) ALLOC_ALIGN(2)
-MALLOC WARN_UNUSED_RESULT;
+void *camkes_dma_alloc(
+    size_t size,
+    unsigned int align,
+    bool cached)
+ALLOC_SIZE(1) ALLOC_ALIGN(2) MALLOC WARN_UNUSED_RESULT;
 
 /**
  * Free previously allocated DMA memory.
@@ -48,18 +49,22 @@ MALLOC WARN_UNUSED_RESULT;
  *    no-op)
  * @param size Size that was given in the allocation request
  */
-void camkes_dma_free(void *ptr, size_t size);
+void camkes_dma_free(
+    void *ptr,
+    size_t size);
 
 /* Return the physical address of a pointer into a DMA buffer. Returns NULL if
  * you pass a pointer into memory that is not part of a DMA buffer. Behaviour
  * is undefined if you pass a pointer into memory that is part of a DMA buffer,
  * but not one currently allocated to you by camkes_dma_alloc_page.
  */
-uintptr_t camkes_dma_get_paddr(void *ptr);
+uintptr_t camkes_dma_get_paddr(
+    void *ptr);
 
 /* Return the cap to a frame backing part of the DMA buffer. Returns seL4_CapNull
  * if passed a pointer into memory that is not part of a DMA buffer. */
-seL4_CPtr camkes_dma_get_cptr(void *ptr);
+seL4_CPtr camkes_dma_get_cptr(
+    void *ptr);
 
 /* Initialise a DMA manager for use with libplatsupport. This manager will be
  * backed by the (generated) CAmkES DMA pool. Returns 0 on success.
@@ -69,7 +74,9 @@ seL4_CPtr camkes_dma_get_cptr(void *ptr);
  * this function. Note that you can mix calls to alloc_page, free_page and the
  * manager initialised by this function with no adverse effects.
  */
-int camkes_dma_manager(ps_dma_man_t *man) NONNULL_ALL WARN_UNUSED_RESULT;
+int camkes_dma_manager(
+    ps_dma_man_t *man)
+NONNULL_ALL WARN_UNUSED_RESULT;
 
 /* Debug functionality for profiling DMA heap usage. This information is
  * returned from a call to `camkes_dma_stats`. Note that this functionality is
@@ -146,6 +153,7 @@ const camkes_dma_stats_t *camkes_dma_stats(void) RETURNS_NONNULL;
  */
 void *camkes_dma_alloc_page(void)
 DEPRECATED("use camkes_dma_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K) instead");
+
 void camkes_dma_free_page(void *ptr)
 DEPRECATED("use camkes_dma_free(ptr, PAGE_SIZE_4K) instead");
 
@@ -156,6 +164,20 @@ struct dma_frame {
     seL4_CPtr cap;
     size_t size;
     uintptr_t vaddr;
+    uintptr_t paddr;
     bool cached;
 };
 typedef struct dma_frame dma_frame_t;
+
+struct dma_pool {
+    uintptr_t start_vaddr;
+    uintptr_t end_vaddr;
+    size_t frame_size;
+    size_t pool_size;
+    size_t num_frames;
+    /* This is an array of the dma_frame_t structs that represent the frames of
+     * a DMA pool, num_frames will determine how many entries are in the
+     * array */
+    dma_frame_t **dma_frames;
+};
+typedef struct dma_pool dma_pool_t;

@@ -1,13 +1,7 @@
 /*
- * Copyright 2017, Data61
- * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- * ABN 41 687 119 230.
+ * Copyright 2017, Data61, CSIRO (ABN 41 687 119 230)
  *
- * This software may be distributed and modified according to the terms of
- * the BSD 2-Clause license. Note that NO WARRANTY is provided.
- * See "LICENSE_BSD2.txt" for details.
- *
- * @TAG(DATA61_BSD)
+ * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #pragma once
@@ -31,10 +25,20 @@
 const char *get_instance_name(void);
 
 /* Attributes */
+
+// This macro allows using attributes as "rvalues" e.g. in the array size
+// declarations. Unfortunately, the C language (in contrast to C++) does not
+// support using "lvalues" in this case, even if declared as const.
+#define CAMKES_CONST_ATTR(attr) attr##_DEF
+
 /*- set myconf = configuration[me.name] -*/
 /*? macros.print_type_definitions(me.type.attributes, myconf) ?*/
 /*- for a in me.type.attributes -*/
     /*- set value = myconf.get(a.name) -*/
+    /*- if value is not none -*/
+        #define /*? a.name ?*/_DEF /*? macros.show_attribute_value(a, value) ?*/
+    /*- endif -*/
+
     extern const /*? macros.show_type(a.type) ?*/ /*? a.name ?*/ /*- if a.array -*/ [/*?len(value)?*/] /*- endif -*/;
 /*- endfor -*/
 
@@ -203,6 +207,11 @@ const char *get_instance_name(void);
     #define /*? d.name ?*/_release() COMPILER_MEMORY_RELEASE()
     #define /*? d.name ?*/_acquire() COMPILER_MEMORY_ACQUIRE()
 
+    #define /*? d.name ?*/_size /*? macros.dataport_size(d.type) ?*/
+
+    static inline size_t /*? d.name ?*/_get_size(void) {
+      return /*? macros.dataport_size(d.type) ?*/;
+    }
 /*- endfor -*/
 
 /*- for m in me.type.mutexes -*/
@@ -243,5 +252,3 @@ void set_putchar(void (*putchar)(int c));
   camkes_error_handler_t /*? i.name ?*/_register_error_handler(
     camkes_error_handler_t handler);
 /*- endfor -*/
-
-@CMAKE_INTERFACE_INCLUDES@

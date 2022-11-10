@@ -11,7 +11,7 @@
  #*/
 
 /*#
- *# KataOS support.
+ *# CantripOS support.
  #*/
 
 #include <autoconf.h>
@@ -21,7 +21,7 @@
 #include <sel4/sel4.h>
 #include <sel4utils/mapping.h>
 
-/*? assert(configuration[me.name].get('kataos')) ?*/
+/*? assert(configuration[me.name].get('cantripos')) ?*/
 
 /*- macro next_pow2(val) -*/
     /*? pow(2, val.bit_length()) ?*/
@@ -83,7 +83,7 @@ const unsigned char MEMORY_RECV_CNODE_DEPTH = /*? recv_cnode_size_bits ?*/;
 
 /*# No cap allocation from here on! We assume all caps exist so we can guess our cnode size from the
  * holding slot #*/
-/*- set holding_slot = alloc_cap('temporary_kataos_slot', None) -*/
+/*- set holding_slot = alloc_cap('temporary_cantripos_slot', None) -*/
 const seL4_CPtr SELF_CNODE_FIRST_SLOT = /*? holding_slot ?*/;
 /*- if cap_space.cnode.size_bits == 'auto' -*/
     /*- set size_bits = configuration[me.name].get('cnode_size_bits') -*/

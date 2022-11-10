@@ -1,37 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 #
-# Copyright 2017, Data61
-# Commonwealth Scientific and Industrial Research Organisation (CSIRO)
-# ABN 41 687 119 230.
+# Copyright 2019, Data61, CSIRO (ABN 41 687 119 230)
 #
-# This software may be distributed and modified according to the terms of
-# the BSD 2-Clause license. Note that NO WARRANTY is provided.
-# See "LICENSE_BSD2.txt" for details.
+# SPDX-License-Identifier: BSD-2-Clause
 #
-# @TAG(DATA61_BSD)
 #
 
 from __future__ import absolute_import, division, print_function, \
     unicode_literals
+from camkes.parser import ParseError
+from camkes.parser.stage3 import DONT_LIFT, LIFT, Parse3
+from camkes.parser.stage2 import Parse2
+from camkes.parser.stage1 import Parse1
+from camkes.parser.stage0 import CPP, Reader
+from camkes.internal.tests.utils import CAmkESTest, cpp_available, \
+    plyplus_introspectible
+from camkes.ast import Component, Configuration, Include, LiftedAST, \
+    Procedure, Setting
 
-import os, six, sys, unittest
+import os
+import six
+import sys
+import unittest
 
 ME = os.path.abspath(__file__)
 
 # Make CAmkES importable
 sys.path.append(os.path.join(os.path.dirname(ME), '../../..'))
 
-from camkes.ast import Component, Configuration, Include, LiftedAST, \
-    Procedure, Setting
-from camkes.internal.tests.utils import CAmkESTest, cpp_available, \
-    plyplus_introspectible
-from camkes.parser.stage0 import CPP, Reader
-from camkes.parser.stage1 import Parse1
-from camkes.parser.stage2 import Parse2
-from camkes.parser.stage3 import DONT_LIFT, LIFT, Parse3
-from camkes.parser import ParseError
 
 class TestStage3(CAmkESTest):
     def setUp(self):
@@ -102,7 +99,7 @@ class TestStage3(CAmkESTest):
         # If the following fails with `10`, you've screwed up operator
         # precedence in the grammar.
         self.assertEqual(setting.value, 9,
-            'operator precedence incorrect when constant folding')
+                         'operator precedence incorrect when constant folding')
 
     def test_numerics_bracketing(self):
         content, read = self.parser.parse_string(
@@ -322,7 +319,7 @@ class TestStage3(CAmkESTest):
             ''')
 
     @unittest.skipIf(not plyplus_introspectible(), 'plyplus internals not as '
-        'expected')
+                     'expected')
     def test_for_missing_lifters(self):
         '''
         Check that stage 3 looks comprehensive.
@@ -370,8 +367,8 @@ class TestStage3(CAmkESTest):
                 continue
 
             self.assertIn(name, lifters, '%s, that could appear in the AST, '
-                'does not appear to be handled by any of the lifters in stage '
-                '3' % name)
+                          'does not appear to be handled by any of the lifters in stage '
+                          '3' % name)
 
     def test_signed_int(self):
         '''
@@ -513,7 +510,7 @@ class TestStage3(CAmkESTest):
         '''
 
         with six.assertRaisesRegex(self, ParseError, 'illegal source in export '
-                'statement'):
+                                   'statement'):
             self.parser.parse_string(spec_bad)
 
         spec_good = '''
@@ -940,7 +937,7 @@ class TestStage3(CAmkESTest):
         Test constant folding of a calculation that deliberately induces an
         `OverflowError`.
         '''
-        with self.assertRaises(ParseError):
+        with self.assertRaises(MemoryError):
             self.parser.parse_string(
                 'configuration { foo.bar = 1 << 2 ** 64; }')
 
@@ -1120,6 +1117,7 @@ class TestStage3(CAmkESTest):
 
         self.assertTrue(include.relative)
         self.assertEqual(include.source, 'helloworld')
+
 
 if __name__ == '__main__':
     unittest.main()

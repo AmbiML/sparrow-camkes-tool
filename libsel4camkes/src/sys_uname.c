@@ -1,13 +1,7 @@
 /*
- * Copyright 2017, Data61
- * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- * ABN 41 687 119 230.
+ * Copyright 2017, Data61, CSIRO (ABN 41 687 119 230)
  *
- * This software may be distributed and modified according to the terms of
- * the BSD 2-Clause license. Note that NO WARRANTY is provided.
- * See "LICENSE_BSD2.txt" for details.
- *
- * @TAG(DATA61_BSD)
+ * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include <autoconf.h>
@@ -58,60 +52,36 @@ long camkes_sys_uname(va_list ap)
 
     /* Set hardware information. */
     char *arch;
-    if (config_set(CONFIG_ARCH_ARM)) {
-        arch = "ARM";
-    } else if (config_set(CONFIG_ARCH_X86)) {
-        arch = "x86";
-    } else {
-        arch = "unknown";
-    }
-    char *armv;
-    if (config_set(CONFIG_ARM_V6)) {
-        armv = "v6";
-    } else if (config_set(CONFIG_ARM_V7A)) {
-        armv = "v7a";
-    } else if (config_set(CONFIG_ARM_V8A)) {
-        armv = "v8a";
-    } else {
-        armv = "";
-    }
-    char *plat;
-    if (config_set(CONFIG_PLAT_KZM)) {
-        plat = "KZM";
-    } else if (config_set(CONFIG_PLAT_OMAP3)) {
-        plat = "OMAP3";
-    } else if (config_set(CONFIG_PLAT_ARM335X)) {
-        plat = "ARM335X";
-    } else if (config_set(CONFIG_PLAT_EXYNOS4)) {
-        plat = "EXYNOS4";
-    } else if (config_set(CONFIG_PLAT_EXYNOS5410)) {
-        plat = "EXYNOS5410";
-    } else if (config_set(CONFIG_PLAT_EXYNOS5422)) {
-        plat = "EXYNOS5422";
-    } else if (config_set(CONFIG_PLAT_EXYNOS5250)) {
-        plat = "EXYNOS5250";
-    } else if (config_set(CONFIG_PLAT_APQ8064)) {
-        plat = "APQ8064";
-    } else if (config_set(CONFIG_PLAT_SABRE)) {
-        plat = "IMX6";
-    } else if (config_set(CONFIG_PLAT_WANDQ)) {
-        plat = "WANDQ";
-    } else if (config_set(CONFIG_PLAT_IMX7_SABRE)) {
-        plat = "IMX7";
-    } else if (config_set(CONFIG_PLAT_ZYNQ7000)) {
-        plat = "ZYNQ7000";
-    } else if (config_set(CONFIG_PLAT_PC99)) {
-        plat = "PC99";
-    } else if (config_set(CONFIG_PLAT_ALLWINNERA20)) {
-        plat = "ALLWINNERA20";
-    } else if (config_set(CONFIG_PLAT_TK1)) {
-        plat = "TK1";
-    } else if (config_set(CONFIG_PLAT_HIKEY)) {
-        plat = "HIKEY";
-    } else {
-        plat = "unknown";
-    }
-    snprintf(buf->machine, sizeof buf->machine, "%s%s %s", arch, armv, plat);
+    char *arch_ver;
+
+#if defined(CONFIG_ARCH_ARM)
+    arch = "ARM";
+#if defined(CONFIG_ARCH_ARM_V6)
+    arch_ver = "v6";
+#elif defined(CONFIG_ARCH_ARM_V7A)
+    arch_ver = "v7a";
+#elif defined(CONFIG_ARCH_ARM_V7VE)
+    arch_ver = "v7a-ve";
+#elif defined(CONFIG_ARCH_ARM_V8A)
+    arch_ver = "v8a, " STRINGIFY(CONFIG_SEL4_ARCH);
+#else
+#error "please define ARM architecture"
+#endif
+
+#elif defined(CONFIG_ARCH_RISCV)
+    arch = "RISC-V";
+    arch_ver = ", " STRINGIFY(CONFIG_SEL4_ARCH);
+
+#elif defined(CONFIG_ARCH_IA32) || defined(CONFIG_ARCH_X86_64)
+    arch = STRINGIFY(CONFIG_SEL4_ARCH);
+    arch_ver = "";
+
+#else
+#error "please define configuration"
+#endif
+
+    snprintf(buf->machine, sizeof buf->machine, "%s (%s%s)",
+             STRINGIFY(CONFIG_PLAT), arch, arch_ver);
 
     /* Set the domain name. */
 #if _GNU_SOURCE

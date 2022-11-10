@@ -1,13 +1,7 @@
 /*
- * Copyright 2017, Data61
- * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- * ABN 41 687 119 230.
+ * Copyright 2017, Data61, CSIRO (ABN 41 687 119 230)
  *
- * This software may be distributed and modified according to the terms of
- * the BSD 2-Clause license. Note that NO WARRANTY is provided.
- * See "LICENSE_BSD2.txt" for details.
- *
- * @TAG(DATA61_BSD)
+ * SPDX-License-Identifier: BSD-2-Clause
  */
 
 /* The grammar for CAmkES architecture specifications. This is intended to be
@@ -75,7 +69,7 @@ ID: '[a-zA-Z_]\w*'
             TRUE1: 'True';
             TRUE2: 'true';
             TO: 'to';
-            UINT64_T: 'uint64_t'; 
+            UINT64_T: 'uint64_t';
             UNSIGNED: 'unsigned';
             USES: 'uses';
             VOID: 'void';
@@ -222,7 +216,7 @@ bitwise_not: '~' precedence0;
 number: '(0x[0-9a-fA-F]+|\d+(\.\d+)?)';
 multi_string: quoted_string+;
 quoted_string: '"[^"]*"'; // "
-angle_string: '<[^>]*>';
+angle_string: '<[^<>;,"{}]*>';
 list: '\[' (item (',' item)* ','?)? '\]';
 dict: '\{' (key ':' item (',' key ':' item)* ','?)? '\}';
 dict_lookup: ('\[' key '\]')+;

@@ -1,16 +1,8 @@
-# CAmkES Manual
-
 <!--
-  Copyright 2017, Data61
-  Commonwealth Scientific and Industrial Research Organisation (CSIRO)
-  ABN 41 687 119 230.
+     Copyright 2017, Data61, CSIRO (ABN 41 687 119 230)
 
-  This software may be distributed and modified according to the terms of
-  the BSD 2-Clause license. Note that NO WARRANTY is provided.
-  See "LICENSE_BSD2.txt" for details.
-
-     @TAG(DATA61_BSD)
-  -->
+     SPDX-License-Identifier: CC-BY-SA-4.0
+-->
 
 This document describes the structure and functionality of CAmkES, a platform
 for building componentised systems for embedded platforms. The documentation is
@@ -738,8 +730,6 @@ Now let's create an ADL description of the Ping component:
 ```camkes
 /* apps/hellodataport/components/Ping/Ping.camkes */
 
-import "Porttype.idl4";
-
 component Ping {
   include "porttype.h";
   control;
@@ -754,8 +744,6 @@ the `MyData_t` type. Add a similar description for Pong:
 
 ```camkes
 /* apps/hellodataport/components/Pong/Pong.camkes */
-
-import "Porttype.idl4";
 
 component Pong {
   include "porttype.h";
@@ -785,7 +773,7 @@ int run(void) {
   strncpy((char*)d1, hello, D1_READY_IDX - 1);
 
   d1_release(); // ensure the assignment below occurs after the strcpy above
-  ((*char)d1)[D1_READY_IDX] = 1;
+  ((char*)d1)[D1_READY_IDX] = 1;
 
   /* Wait for Pong to reply. We can assume d2_data is
    * zeroed on startup by seL4.
@@ -1343,6 +1331,14 @@ The following functions are available at runtime:
   emitted if necessary, depending on the affinities of component instances
   connected by the dataport.
 
+**`size_t`&nbsp;_`dataport`_`_get_size(void)`**
+
+> Returns the size for the specific dataport this function gets called for. In
+  addition to this function, every component that has a dataport will be
+  provided with a macro _`dataport`_`_size` that is defined to the size of the
+  invdividual dataport. This macro allows declaring fixed size arrays, as the
+  `C` language requires a constant-expression for this.
+
 **`void *camkes_dma_alloc(size_t size, int align)`** (`#include <camkes/dma.h>`)
 **`void camkes_dma_free(void *ptr, size_t size)`** (`#include <camkes/dma.h>`)
 
@@ -1694,6 +1690,45 @@ in the glue code with the same name as the attribute.
 ```c
 const char * a = "Hello, World!";
 const int b = 42;
+```
+
+#### Attribute's conversion to literal
+
+Unfortunately, the `C` language (in contrast to C++) does not support using
+`lvalues` as literals (e.g. when declaring an array), even if declared as const,
+so we need to introduce a "mechanism" for converting CAmkES attributes to
+literals.
+
+The `CAMKES_CONST_ATTR` macro has been introduced for that purpose.
+
+Actually, the macro does not really convert arbitrary variables, but rather
+CAmkES declares a const variable and also adds a respective macro to the code,
+which is then used for that purpose.
+
+Usage example is presented below:
+
+```C
+/* main.camkes */
+assembly {
+    composition {
+        component FOO foo;
+    }
+    configuration {
+        foo.lenData  = 16;
+    }
+}
+
+/* Foo.c */
+const int foo[CAMKES_CONST_ATTR(lenData)] = { 0 };
+
+int run()
+{
+#if CAMKES_CONST_ATTR(lenData) < 0xF0
+    return 0;
+#else
+    return 1;
+#endif
+}
 ```
 
 ### Hardware Components

@@ -1,13 +1,7 @@
 /*
- * Copyright 2020, Data61
- * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- * ABN 41 687 119 230.
+ * Copyright 2020, Data61, CSIRO (ABN 41 687 119 230)
  *
- * This software may be distributed and modified according to the terms of
- * the BSD 2-Clause license. Note that NO WARRANTY is provided.
- * See "LICENSE_BSD2.txt" for details.
- *
- * @TAG(DATA61_BSD)
+ * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include <camkes/dataport.h>
@@ -41,9 +35,24 @@
         .vaddr = (uintptr_t) &/*? dataport_symbol_name ?*/.content[/*? loop.index0 * page_size ?*/],
         .cached = /*?  int(cached) ?*/,
     };
-    USED SECTION("_dma_frames")
-    dma_frame_t * /*? me.interface.name ?*/_dma_/*? loop.index0 ?*/_ptr = &/*? me.interface.name ?*/_dma_/*? loop.index0 ?*/;
 /*- endfor -*/
+
+static dma_frame_t */*? me.interface.name ?*/_dma_frames[] = {
+    /*- for cap in frame_caps -*/
+        &/*? me.interface ?*/_dma_/*? loop.index0 ?*/,
+    /*- endfor -*/
+};
+
+static dma_pool_t /*? me.interface.name ?*/_dma_pool = {
+    .start_vaddr = (uintptr_t) &/*? dataport_symbol_name ?*/.content[0],
+    .end_vaddr = (uintptr_t) &/*? dataport_symbol_name ?*/.content[0] + /*? size ?*/ - 1,
+    .frame_size = /*? page_size ?*/,
+    .pool_size = /*? size ?*/,
+    .num_frames = /*? len(frame_caps) ?*/,
+    .dma_frames = /*? me.interface.name ?*/_dma_frames,
+};
+USED SECTION("_dma_pools")
+dma_pool_t */*? me.interface.name ?*/_dma_pool_ptr = &/*? me.interface.name ?*/_dma_pool;
 
 static void *dataport_addr = (void *)&/*? dataport_symbol_name ?*/;
 
@@ -70,7 +79,7 @@ void * /*? me.interface.name ?*/_unwrap_ptr(dataport_ptr_t *p) {
 
 /*- if configuration[me.parent.name].get('controller') == str(me) -*/
 static void __attribute__((constructor)) dma_init(void) {
-    int res = camkes_dma_init(/*? dataport_symbol_name ?*/.content, /*? size ?*/, /*? page_size ?*/);
+    int res = camkes_dma_init(/*? dataport_symbol_name ?*/.content, /*? size ?*/, /*? page_size ?*/, /*? int(cached) ?*/);
     if (res) {
         ZF_LOGE("Invalid arguments given to camkes_dma_init in str(me)");
     }

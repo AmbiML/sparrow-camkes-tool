@@ -1,13 +1,7 @@
 /*#
- *# Copyright 2017, Data61
- *# Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- *# ABN 41 687 119 230.
- *#
- *# This software may be distributed and modified according to the terms of
- *# the BSD 2-Clause license. Note that NO WARRANTY is provided.
- *# See "LICENSE_BSD2.txt" for details.
- *#
- *# @TAG(DATA61_BSD)
+ * Copyright 2017, Data61, CSIRO (ABN 41 687 119 230)
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
  #*/
 
 #include <autoconf.h>
@@ -186,9 +180,26 @@ char /*? dma_symbol_name ?*/[/*? dma_pool ?*/]
         .vaddr = (uintptr_t) &/*? dma_symbol_name ?*/[/*? loop.index0 * page_size[0] ?*/],
         .cached = /*? int(dma_pool_cache) ?*/,
     };
-    USED SECTION("_dma_frames")
-    dma_frame_t * /*? me.instance.name ?*/_dma_/*? loop.index0 ?*/_ptr = &/*? me.instance.name ?*/_dma_/*? loop.index0 ?*/;
 /*- endfor -*/
+
+/*- set sanitized_name = me.instance.name.replace('.', '_') -*/
+
+static dma_frame_t */*? sanitized_name ?*/_dma_frames[] = {
+    /*- for cap in dma_frames -*/
+        &/*? sanitized_name ?*/_dma_/*? loop.index0 ?*/,
+    /*- endfor -*/
+};
+
+static dma_pool_t /*? sanitized_name ?*/_component_dma_pool = {
+    .start_vaddr = (uintptr_t) &/*? dma_symbol_name ?*/[0],
+    .end_vaddr = (uintptr_t) &/*? dma_symbol_name ?*/[0] + /*? page_size[0] * num_dma_frames ?*/ - 1,
+    .frame_size = /*? page_size[0] ?*/,
+    .pool_size = /*? page_size[0] * num_dma_frames ?*/,
+    .num_frames = /*? len(dma_frames) ?*/,
+    .dma_frames = /*? sanitized_name ?*/_dma_frames,
+};
+USED SECTION("_dma_pools")
+dma_pool_t */*? sanitized_name ?*/_dma_pool_ptr = &/*? sanitized_name ?*/_component_dma_pool;
 
 /* Mutex functionality. */
 /*- for m in me.type.mutexes -*/
@@ -296,7 +307,7 @@ static void CONSTRUCTOR(CAMKES_SYSCALL_CONSTRUCTOR_PRIORITY+1) init(void) {
      * this point, so any error triggered below will certainly be fatal.
      */
     int res = camkes_dma_init(/*? dma_symbol_name ?*/, /*? dma_pool ?*/,
-        /*? page_size[0] ?*/);
+        /*? page_size[0] ?*/, /*? int(dma_pool_cache) ?*/);
     ERR_IF(res != 0, camkes_error, ((camkes_error_t){
             .type = CE_ALLOCATION_FAILURE,
             .instance = "/*? me.name ?*/",

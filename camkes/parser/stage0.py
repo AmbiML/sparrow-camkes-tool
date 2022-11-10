@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 #
-# Copyright 2017, Data61
-# Commonwealth Scientific and Industrial Research Organisation (CSIRO)
-# ABN 41 687 119 230.
+# Copyright 2019, Data61, CSIRO (ABN 41 687 119 230)
 #
-# This software may be distributed and modified according to the terms of
-# the BSD 2-Clause license. Note that NO WARRANTY is provided.
-# See "LICENSE_BSD2.txt" for details.
+# SPDX-License-Identifier: BSD-2-Clause
 #
-# @TAG(DATA61_BSD)
 #
 
 '''
@@ -43,9 +37,7 @@ class CPP(Parser):
     def __init__(self, cpp_bin='cpp', flags=None):
         self.cpp_bin = cpp_bin
         self.flags = flags or []
-        self.out_dir = os.path.join(os.getcwd(), 'camkes-tool')
-        if not os.path.isdir(self.out_dir):
-            os.mkdir(self.out_dir)
+        self.out_dir = os.getcwd()
 
     def parse_file(self, filename):
         # Run cpp with -MD to generate dependencies because we want to
@@ -53,12 +45,17 @@ class CPP(Parser):
         output_basename = os.path.join(self.out_dir, os.path.basename(filename))
         output = output_basename + '.cpp'
         deps = output_basename + '.d'
-        p = subprocess.Popen([self.cpp_bin, '-MD', '-MF', deps, '-o',
-                              output] + self.flags + [filename], stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE, universal_newlines=True)
+        cmd_array = [self.cpp_bin, '-MD', '-MF', deps, '-o', output] \
+            + self.flags + [filename]
+        p = subprocess.Popen(
+            cmd_array,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True)
         _, stderr = p.communicate()
         if p.returncode != 0:
-            raise ParseError('CPP failed: %s' % stderr)
+            raise ParseError('CPP command failed:\n  %s\nstderr:\n%s' %
+                             ('\n    '.join(cmd_array), stderr))
         with codecs.open(output, 'r', 'utf-8') as f:
             processed = f.read()
         with codecs.open(deps, 'r', 'utf-8') as f:
@@ -69,10 +66,14 @@ class CPP(Parser):
         output_basename = os.path.join(self.out_dir,  'output.camkes')
         output = output_basename + '.cpp'
         deps = output_basename + '.d'
-        p = subprocess.Popen([self.cpp_bin, '-MD', '-MF', deps, '-o',
-                              output] + self.flags, stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                             universal_newlines=True)
+        cmd_array = [self.cpp_bin, '-MD', '-MF', deps, '-o', output] \
+            + self.flags
+        p = subprocess.Popen(
+            cmd_array,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True)
         # hack around python2 and 3's awful unicode problems
         try:
             string = str(string)
@@ -82,7 +83,8 @@ class CPP(Parser):
             string = string.encode('utf-8')
         _, stderr = p.communicate(string)
         if p.returncode != 0:
-            raise ParseError('CPP failed: %s' % stderr)
+            raise ParseError('CPP command failed:\n  %s\nstderr:\n%s' %
+                             ('\n    '.join(cmd_array), stderr))
         with codecs.open(output, 'r', 'utf-8') as f:
             processed = f.read()
         with codecs.open(deps, 'r', 'utf-8') as f:

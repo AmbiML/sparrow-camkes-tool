@@ -1,13 +1,7 @@
 /*
- * Copyright 2019, Data61
- * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- * ABN 41 687 119 230.
+ * Copyright 2019, Data61, CSIRO (ABN 41 687 119 230)
  *
- * This software may be distributed and modified according to the terms of
- * the BSD 2-Clause license. Note that NO WARRANTY is provided.
- * See "LICENSE_BSD2.txt" for details.
- *
- * @TAG(DATA61_BSD)
+ * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include <assert.h>
@@ -101,7 +95,7 @@
 
         /* Flush data corresponding to the dataport-relative address range from the CPU cache */
         int /*? reg_interface_name ?*/_flush_cache(size_t start_offset UNUSED, size_t size UNUSED, dma_cache_op_t cache_op UNUSED) {
-            return camkes_dataport_flush_cache(start_offset, size, 
+            return camkes_dataport_flush_cache(start_offset, size,
                                                (uintptr_t) &/*? dataport_symbol_name ?*/.content,
                                                /*? size ?*/, cache_op);
         }
@@ -123,7 +117,7 @@
 
     /*# CAmkES has a maximum limit of 28 bits for badges, #*/
     /*# highly unlikely a device has greater than 28 #*/
-    /*? dtb_macros.parse_dtb_node_interrupts(dtb, 28) ?*/
+    /*? dtb_macros.parse_dtb_node_interrupts(dtb, 28, options.architecture) ?*/
     /*- set irq_set = pop('irq_set') -*/
 
     /*- for (i, irq_node) in enumerate(irq_set)  -*/
@@ -192,7 +186,7 @@
                     } else if (/*? me.interface.name ?*/_irq_handle) {
                         /*? me.interface.name ?*/_irq_handle(&irq);
                     } else if (/*? interrupt_struct_prefix ?*/_/*? i ?*/.is_allocated) {
-                        /*? interrupt_struct_prefix ?*/_/*? i ?*/.callback_fn(/*? interrupt_struct_prefix ?*/_/*? i ?*/.callback_data, 
+                        /*? interrupt_struct_prefix ?*/_/*? i ?*/.callback_fn(/*? interrupt_struct_prefix ?*/_/*? i ?*/.callback_data,
 
                                                                               /*? me.interface.name ?*/_irq_acknowledge_wrapper,
 

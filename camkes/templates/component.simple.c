@@ -1,13 +1,7 @@
 /*
- * Copyright 2017, Data61
- * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- * ABN 41 687 119 230.
+ * Copyright 2017, Data61, CSIRO (ABN 41 687 119 230)
  *
- * This software may be distributed and modified according to the terms of
- * the BSD 2-Clause license. Note that NO WARRANTY is provided.
- * See "LICENSE_BSD2.txt" for details.
- *
- * @TAG(DATA61_BSD)
+ * SPDX-License-Identifier: BSD-2-Clause
  */
 
 /* This template is meant to be used for components that are themselves dynamic systems
@@ -352,7 +346,7 @@ static seL4_Error simple_camkes_get_iospace(void *data, uint16_t domainID, uint1
 }
 #endif
 
-#ifdef CONFIG_ARM_SMMU
+#ifdef CONFIG_TK1_SMMU
 static seL4_Error simple_camkes_get_iospace_cap_count(void *data, int *count) {
     if (count) {
         *count = /*? len(iospaces) ?*/;
@@ -522,7 +516,7 @@ void camkes_make_simple(simple_t *simple) {
     simple->sched_ctrl = &camkes_simple_sched_ctrl;
     simple->core_count = &camkes_simple_core_count;
 #endif
-#ifdef CONFIG_ARM_SMMU
+#ifdef CONFIG_TK1_SMMU
     simple->arch_simple.iospace_cap_count = simple_camkes_get_iospace_cap_count;
     simple->arch_simple.iospace_get_nth_cap = simple_camkes_get_iospace_nth_cap;
 #endif
