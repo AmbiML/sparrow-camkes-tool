@@ -815,12 +815,21 @@ static int post_main(int thread_id) {
         case /*? tcb_control ?*/ : /* Control thread */
             camkes_tls_init(thread_id);
             for (int i = 0; i < /*? len(threads) - 1 ?*/; i++) {
+#ifdef cantripos_DEF
+                bool static_tls_fits = sel4runtime_get_tls_size() <= sizeof(static_tls_regions[i]);
+                /* Statically configured TLS must be large enough. */
+                ZF_LOGF_IF(!static_tls_fits, "CONFIG_SEL4RUNTIME_STATIC_TLS too small (%zu > %zu)",
+                        sel4runtime_get_tls_size(), sizeof(static_tls_regions[i]));
+                assert(static_tls_fits);
+                tls_regions[i] = static_tls_regions[i];
+#else
                 if (sel4runtime_get_tls_size() < CONFIG_SEL4RUNTIME_STATIC_TLS) {
                     tls_regions[i] = static_tls_regions[i];
                 } else {
                     tls_regions[i] = malloc(sel4runtime_get_tls_size());
                     ZF_LOGF_IF(tls_regions[i] == NULL, "Failed to create tls");
                 }
+#endif  // cantripos_DEF
             }
             /*- for cap in copy_region_caps -*/
                 /*# Would otherwise put this in pre_init... #*/
