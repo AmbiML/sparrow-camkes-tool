@@ -182,18 +182,18 @@ int /*- if passive -*/
 
                         /*#- We no longer need anything we previously malloced #*/
                         /*-- if m.return_type == 'string' -*/
-                            free(* /*? ret_ptr ?*/);
+                            MARSHAL_FREE(* /*? ret_ptr ?*/);
                         /*-- endif -*/
                         /*-- for p in m.parameters -*/
                             /*-- if p.array -*/
                                 /*-- if p.type == 'string' -*/
                                     for (int mcount = 0; mcount < * p_/*? p.name ?*/_sz_ptr; mcount++) {
-                                        free((* p_/*? p.name ?*/_ptr)[mcount]);
+                                        MARSHAL_FREE((* p_/*? p.name ?*/_ptr)[mcount]);
                                     }
                                 /*-- endif -*/
-                                free(* p_/*? p.name ?*/_ptr);
+                                MARSHAL_FREE(* p_/*? p.name ?*/_ptr);
                             /*-- elif p.type == 'string' -*/
-                                free(* p_/*? p.name ?*/_ptr);
+                                MARSHAL_FREE(* p_/*? p.name ?*/_ptr);
                             /*-- endif -*/
                         /*-- endfor -*/
 

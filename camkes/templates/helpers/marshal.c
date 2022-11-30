@@ -228,14 +228,14 @@
                     /*-- if p.type == 'string' -*/
                         /* At this point p_/*? p.name ?*/_sz should still contain the old size */
                         for (int i = 0; i < * p_/*? p.name ?*/_sz; i ++) {
-                            free((* p_/*? p.name ?*/)[i]);
+                            MARSHAL_FREE((* p_/*? p.name ?*/)[i]);
                         }
                     /*-- endif -*/
-                    free(* p_/*? p.name ?*/);
+                    MARSHAL_FREE(* p_/*? p.name ?*/);
                 /*-- endif -*/
             /*-- elif p.type == 'string' -*/
                 /*-- if p.direction == 'inout' -*/
-                    free(* p_/*? p.name ?*/);
+                    MARSHAL_FREE(* p_/*? p.name ?*/);
                 /*-- endif -*/
             /*-- endif -*/
 
@@ -266,17 +266,17 @@ cleanup_/*? index + 1 ?*/:
         /*- if q.array -*/
             /*- if q.type == 'string' -*/
                 for (int i = 0; i < * p_/*? q.name ?*/_sz; i++) {
-                    free((* p_/*? q.name ?*/)[i]);
+                    MARSHAL_FREE((* p_/*? q.name ?*/)[i]);
                 }
             /*- endif -*/
-            free(* p_/*? q.name ?*/);
+            MARSHAL_FREE(* p_/*? q.name ?*/);
         /*- elif q.type == 'string' -*/
-            free(* p_/*? q.name ?*/);
+            MARSHAL_FREE(* p_/*? q.name ?*/);
         /*- endif -*/
     /*- endfor -*/
 cleanup_0:
             /*-- if return_type == 'string' -*/
-                free(* return_value);
+                MARSHAL_FREE(* return_value);
             /*-- endif -*/
             return -1;
     }
@@ -371,12 +371,12 @@ cleanup_/*? index + 1 ?*/:
             /*-- if q.array -*/
                 /*-- if q.type == 'string' -*/
                     for (int i = 0; i < * p_/*? q.name ?*/_sz; i ++) {
-                        free((* p_/*? q.name ?*/)[i]);
+                        MARSHAL_FREE((* p_/*? q.name ?*/)[i]);
                     }
                 /*-- endif -*/
-                free(* p_/*? q.name ?*/);
+                MARSHAL_FREE(* p_/*? q.name ?*/);
             /*-- elif q.type == 'string' -*/
-                free(* p_/*? q.name ?*/);
+                MARSHAL_FREE(* p_/*? q.name ?*/);
             /*-- endif -*/
         /*-- endfor -*/
 cleanup_0:

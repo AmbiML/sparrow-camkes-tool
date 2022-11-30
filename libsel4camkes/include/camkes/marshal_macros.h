@@ -6,7 +6,21 @@
 
 #pragma once
 
+#include <camkes.h>
 #include <camkes/error.h>
+
+#ifdef cantripos_DEF
+extern void *rust_malloc(size_t size);
+#define MARSHAL_MALLOC(size) rust_malloc(size);
+extern void rust_free(void *ptr);
+#define MARSHAL_FREE(ptr) rust_free(ptr);
+extern char *rust_strdup(const char *s);
+#define MARSHAL_STRDUP(s) rust_strdup(s);
+#else
+#define MARSHAL_MALLOC(size) malloc(size)
+#define MARSHAL_FREE(ptr) free(ptr)
+#define MARSHAL_STRDUP(str) strdup(str);
+#endif
 
 #define ERR_IF_BUFFER_LENGTH_EXCEEDED(size, curr_offset, desired, method,      \
                                       param)                                   \
@@ -121,13 +135,13 @@
                                  param_name, cleanup_action);                  \
     memcpy(ptr_sz, buffer + length, sizeof(*ptr_sz));                          \
     length += sizeof(*ptr_sz);                                                 \
-    *ptr = malloc(sizeof((*ptr)[0]) * (*ptr_sz));                              \
+    *ptr = MARSHAL_MALLOC(sizeof((*ptr)[0]) * (*ptr_sz));                      \
     ERR_IF_ALLOCATION_FAILURE(*ptr, sizeof((*ptr)[0]) * (*ptr_sz),             \
                               method_name, param_name, cleanup_action);        \
     ERR_IF_MALFORMED_RPC_PAYLOAD(size, length,                                 \
                                  (sizeof((*ptr)[0]) * (*ptr_sz)), method_name, \
                                  param_name, ({                                \
-                                   free(*ptr);                                 \
+                                   MARSHAL_FREE(*ptr);                         \
                                    cleanup_action;                             \
                                  }));                                          \
     memcpy((*ptr), buffer + length, sizeof((*ptr)[0]) * (*ptr_sz));            \
@@ -141,7 +155,7 @@
                                  param_name, cleanup_action);                  \
     memcpy(ptr_sz, buffer + length, sizeof(*ptr_sz));                          \
     length += sizeof(*ptr_sz);                                                 \
-    *ptr = malloc(sizeof(char *) * (*ptr_sz));                                 \
+    *ptr = MARSHAL_MALLOC(sizeof(char *) * (*ptr_sz));                         \
     ERR_IF_ALLOCATION_FAILURE(*ptr, sizeof(char *) * (*ptr_sz), method_name,   \
                               param_name, cleanup_action);                     \
     for (int __i = 0; __i < *ptr_sz; __i++) {                                  \
@@ -149,19 +163,19 @@
       ERR_IF_MALFORMED_RPC_PAYLOAD(size, length, (__strlen + 1), method_name,  \
                                    param_name, ({                              \
                                      for (int __j = 0; __j < __i; __j++) {     \
-                                       free((*ptr)[__j]);                      \
+                                       MARSHAL_FREE((*ptr)[__j]);              \
                                      }                                         \
-                                     free(*ptr);                               \
+                                     MARSHAL_FREE(*ptr);                       \
                                      cleanup_action;                           \
                                    }));                                        \
       /* If we didn't trigger an error, we now know this strdup is safe. */    \
-      (*ptr)[__i] = strdup(buffer + length);                                   \
+      (*ptr)[__i] = MARSHAL_STRDUP(buffer + length);                           \
       ERR_IF_ALLOCATION_FAILURE((*ptr)[__i], __strlen + 1, method_name,        \
                                 param_name, ({                                 \
                                   for (int __j = 0; __j < __i; __j++) {        \
-                                    free((*ptr)[__j]);                         \
+                                    MARSHAL_FREE((*ptr)[__j]);                 \
                                   }                                            \
-                                  free(*ptr);                                  \
+                                  MARSHAL_FREE(*ptr);                          \
                                   cleanup_action;                              \
                                 }));                                           \
       length += __strlen + 1;                                                  \
@@ -175,7 +189,7 @@
     size_t __strlen = strnlen(buffer + length, size - length);                 \
     ERR_IF_MALFORMED_RPC_PAYLOAD(size, length, (__strlen + 1), method_name,    \
                                  param_name, cleanup_action);                  \
-    *ptr = strdup(buffer + length);                                            \
+    *ptr = MARSHAL_STRDUP(buffer + length);                                    \
     ERR_IF_ALLOCATION_FAILURE(*ptr, __strlen + 1, method_name, param_name,     \
                               cleanup_action);                                 \
     length + __strlen + 1;                                                     \
