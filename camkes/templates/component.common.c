@@ -586,9 +586,28 @@ void camkes_tls_init(int thread_id) {
 /*- if options.fprovide_tcb_caps -*/
 #ifdef CONFIG_DEBUG_BUILD
    char thread_name[seL4_MsgMaxLength * sizeof(seL4_Word)];
+#ifdef cantripos_DEF
+   /* snprintf requires a big stack, avoid. */
+   size_t avail = sizeof(thread_name) - 1;
+   size_t len = strlen(get_instance_name());
+   size_t to_copy = len < avail ? len : avail;
+   memcpy(thread_name, get_instance_name(), to_copy);
+   avail -= to_copy;
+   size_t offset = to_copy;
+   if (avail > 0) {
+       thread_name[offset++] = ':';
+       avail--;
+   }
+   len = strlen(get_thread_name(thread_id));
+   to_copy = len < avail ? len : avail;
+   memcpy(thread_name + offset, get_thread_name(thread_id), to_copy);
+   offset += to_copy;
+   thread_name[offset++] = '\0';
+#else
    snprintf(thread_name, sizeof(thread_name), "%s:%s",
        get_instance_name(), get_thread_name(thread_id));
    thread_name[sizeof(thread_name) - 1] = '\0';
+#endif
    seL4_DebugNameThread(camkes_get_tls()->tcb_cap, thread_name);
 #endif
 /*- endif -*/
