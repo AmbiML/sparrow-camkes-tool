@@ -103,19 +103,51 @@ file(
 
 list(SORT deps)
 
+# TODO: conditionally remove source files from deps.
+
+# cantrip: remove unused sync/mutex support.
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sync.c)
+
+# cantrip: remove unused interface support.
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/interface_registration.c)
+
+# cantrip: remove unused IO port/device functionality.
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/io.c)
+
+# cantrip: remove unused IRQ functionality.
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/irq.c)
+
+# cantrip: remove unused queues.
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/msgqueue.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/msgqueue_template.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/virtqueue.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/virtqueue_common.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/virtqueue_template.c)
+
+# cantrip: remove unused syscall emulation.
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_io.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_exit.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_io.h)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_select.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_uname.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_yield.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_io.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_signal.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_socket.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_pause.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_madvise.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_thread.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/sys_clock.c)
+list(REMOVE_ITEM deps ${CMAKE_CURRENT_SOURCE_DIR}/src/vsyscall.c)
+
+
 add_library(sel4camkes STATIC EXCLUDE_FROM_ALL ${deps})
 target_include_directories(sel4camkes PUBLIC include)
 target_include_directories(sel4camkes PRIVATE src/arch_include)
 target_link_libraries(
     sel4camkes
-    muslc
     sel4
-    sel4debug
-    platsupport
-    sel4muslcsys
-    sel4sync
-    virtqueue
     sel4camkes_Config
-    sel4runtime_Config
     sel4_autoconf
+    cantripcamkes
 )
