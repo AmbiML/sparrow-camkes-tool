@@ -52,3 +52,24 @@ DeclareCAmkESConnector(seL4DTBHW TO seL4DTBHardware-to.template.c)
 foreach(connector IN ITEMS seL4HardwareInterrupt seL4IOAPICHardwareInterrupt)
     DeclareCAmkESConnector(${connector} TO ${connector}.template.c)
 endforeach()
+
+# CantripOS connectors
+foreach(
+    connector
+    IN
+    ITEMS
+    cantripRPCCall
+    cantripRPCCallSignal
+    cantripRPCOverMultiSharedData
+)
+    DeclareCAmkESConnector(
+        ${connector}
+        FROM
+        ${connector}-from.template.rs
+        TO
+        ${connector}-to.template.rs
+    )
+endforeach()
+DeclareCAmkESConnector(cantripIRQ TO cantripIRQ.template.rs)
+DeclareCAmkESConnector(cantripMMIO FROM cantripMMIO.template.rs)
+DeclareCAmkESConnector(cantripSharedData FROM cantripSharedData.template.rs TO cantripSharedData.template.rs)
