@@ -126,6 +126,8 @@ def new_context(entity, assembly, render_state, state_key, outfile_name,
 
                 'register_dma_pool': (lambda symbol, page_size, caps:
                                       register_dma_pool(addr_space, symbol, page_size, caps, cap_space)),
+                'register_copyregion_symbol': (lambda symbol, size:
+                                      register_copyregion_symbol(addr_space, symbol, size)),
 
                 # A `self`-like reference to the current AST object. It would be nice
                 # to actually call this `self` to lead to more pythonic templates, but
@@ -607,6 +609,16 @@ def register_dma_pool(addr_space, symbol, page_size, caps, cap_space):
     assert addr_space
     addr_space.add_symbol_with_caps(
         symbol, [page_size] * len(caps), [cap_space.cnode[i] for i in caps])
+
+
+def register_copyregion_symbol(addr_space, symbol, size):
+    '''
+    Create a copyregion symbol of `size`. This is just a hole in the address
+    space without any associated page frames.
+    '''
+    assert addr_space
+    number_frames = size//4096
+    addr_space.add_symbol_with_caps(symbol, [4096] * number_frames, [None] * number_frames)
 
 
 def object_label_mapping(obj_space):

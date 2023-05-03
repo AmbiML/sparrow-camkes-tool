@@ -74,12 +74,8 @@ const char *get_instance_name(void) {
     return name;
 }
 
-/*- set copy_region_caps = [] -*/
 /*- for c in me.type.copyregions -*/
-    /*# Setup any per-component copy regions. The pre_init (or similar) routine
-      * is expected to unmap the pages using copy_region_caps. This leaves each
-      * COPY_REGION as a "hole" in the component's VSpace where it can map page
-      * frames. Users are required to implement any necessary synchronization. #*/
+    /*# Setup any per-component copy regions. #*/
     /*- set copy_region_size = c.size -*/
     /*- set page_size = macros.get_page_size(copy_region_size, options.architecture) -*/
     /*- if page_size == 0 -*/
@@ -91,7 +87,7 @@ const char *get_instance_name(void) {
         char /*? copy_region_symbol ?*/[ROUND_UP_UNSAFE(/*? copy_region_size ?*/, /*? page_size ?*/)]
         ALIGN(/*? page_size ?*/)
         SECTION("align_/*? page_size_bits ?*/bit");
-    /*? register_shared_variable('%s_copy_region_%s' % (me.name, c.name), copy_region_symbol, copy_region_size, frame_size=page_size, perm='RW', with_mapping_caps=copy_region_caps) ?*/
+    /*- do register_copyregion_symbol(copy_region_symbol, copy_region_size) -*/
 /*- endfor -*/
 
 /*- set cnode_size = configuration[me.address_space].get('cnode_size_bits') -*/
@@ -850,19 +846,6 @@ static int post_main(int thread_id) {
                 }
 #endif  // cantripos_DEF
             }
-            /*- for cap in copy_region_caps -*/
-                /*# Would otherwise put this in pre_init... #*/
-                ret = seL4_ARCH_Page_Unmap(/*? cap ?*/);
-                ERR_IF(ret != 0, camkes_error, ((camkes_error_t){
-                    .type = CE_SYSCALL_FAILED,
-                    .instance = "/*? me.name ?*/",
-                    .description = "failed to unmap copy_region frame /*? cap ?*/",
-                    .syscall = 0, /* XXX no ARCHPageUnmap */
-                    .error = ret,
-                }), ({
-                    return -1;
-                }));
-            /*- endfor -*/
             ret = component_control_main();
             sync_sem_bare_wait(/*? interface_init_ep ?*/, &interface_init_lock);
             return ret;
