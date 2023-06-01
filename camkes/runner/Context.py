@@ -96,11 +96,10 @@ def new_context(entity, assembly, render_state, state_key, outfile_name,
                 # address spaces and CSpaces are 1-to-1.
                 'register_shared_variable': None if cap_space is None else \
                 (lambda global_name, symbol, size, frame_size=None, paddr=None,
-                 perm='RWX', cached=True, label=entity.parent.label(),
-                 with_mapping_caps=None, language='c':
+                 perm='RWX', cached=True, label=entity.parent.label(), with_mapping_caps=None:
                  register_shared_variable(
                      addr_space, obj_space, global_name, symbol, size, cap_space,
-                     frame_size, paddr, perm, cached, label, with_mapping_caps, language)),
+                     frame_size, paddr, perm, cached, label, with_mapping_caps)),
 
                 'get_shared_variable_backing_frames': None if cap_space is None else \
                 (lambda global_name, size, frame_size=None, label=entity.parent.label():
@@ -456,8 +455,7 @@ def calc_frame_size(size, frame_size, arch):
 
 
 def register_shared_variable(addr_space, obj_space, global_name, symbol, size, cap_space,
-                             frame_size=None, paddr=None, perm='RWX', cached=True, label=None, with_mapping_caps=None,
-                             language='c'):
+                             frame_size=None, paddr=None, perm='RWX', cached=True, label=None, with_mapping_caps=None):
     '''
     Create a reservation for a shared memory region between multiple
     components.
@@ -484,7 +482,6 @@ def register_shared_variable(addr_space, obj_space, global_name, symbol, size, c
                    `Context`, this defaults to the current entity name.
     with_mapping_caps: An array to return mapping caps if the component needs the
                    caps for the mapping to be moved into their own cspace.
-    language       one of 'c' (default),'rust' to control the generated code
     '''
     assert addr_space
     size = int(size)
@@ -519,20 +516,17 @@ def register_shared_variable(addr_space, obj_space, global_name, symbol, size, c
         caps = [Cap(frame, read=read, write=write, grant=grant, cached=cached) for frame in frames]
     sizes = [frame_size] * num_frames
     addr_space.add_symbol_with_caps(symbol, sizes, caps)
-    if language == 'rust':
-        return ''
-    elif language == 'c':
-        # Return code to:
-        #  1. page-align the shared variable;
-        #  2. make it visible in the final ELF; and
-        #  3. Check that it is page-sized.
-        return 'extern typeof(%(sym)s) %(sym)s ALIGN(%(frame_size)d) VISIBLE;\n'      \
-               'static_assert(sizeof(%(sym)s) <= %(size)d,\n'                       \
-               '  "typeof(%(sym)s) size greater than dataport size.");\n'                    \
-               'static_assert(sizeof(%(sym)s) %% %(frame_size)d == 0,\n'              \
-               '  "%(sym)s not page-sized. Template bug in its declaration? '       \
-               'Suggested formulation: `char %(sym)s[ROUND_UP_UNSAFE(sizeof(...), ' \
-               'PAGE_SIZE_4K)];`");' % {'sym': symbol, 'size': size, 'frame_size': frame_size}
+    # Return code to:
+    #  1. page-align the shared variable;
+    #  2. make it visible in the final ELF; and
+    #  3. Check that it is page-sized.
+    return 'extern typeof(%(sym)s) %(sym)s ALIGN(%(frame_size)d) VISIBLE;\n'      \
+           'static_assert(sizeof(%(sym)s) <= %(size)d,\n'                       \
+           '  "typeof(%(sym)s) size greater than dataport size.");\n'                    \
+           'static_assert(sizeof(%(sym)s) %% %(frame_size)d == 0,\n'              \
+           '  "%(sym)s not page-sized. Template bug in its declaration? '       \
+           'Suggested formulation: `char %(sym)s[ROUND_UP_UNSAFE(sizeof(...), ' \
+           'PAGE_SIZE_4K)];`");' % {'sym': symbol, 'size': size, 'frame_size': frame_size}
 
 
 def get_shared_variable_backing_frames(obj_space, global_name, size, frame_size=None, label=None):

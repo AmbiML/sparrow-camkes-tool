@@ -149,5 +149,5 @@ target_link_libraries(
     sel4
     sel4camkes_Config
     sel4_autoconf
-    cantripdebug
+    cantripcamkes
 )

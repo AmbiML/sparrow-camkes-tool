@@ -168,8 +168,8 @@
   #  recv_buffer_size_fixed: If fixed a received message has an 'unknown' size as the entire buffer is always transfered
   #  badges: List of the badge assigned to each incoming edge of the connector
   #*/
-/*- macro establish_from_rpc(namespace, buffer=none, language='c') -*/
-    /*- set namespace.language = language -*/
+/*- macro establish_from_rpc(namespace, buffer=none) -*/
+    /*- set namespace.language = 'c' -*/
     /*# Establish the buffer for message contents #*/
     /*? _establish_buffer(namespace, buffer, False) ?*/
 
