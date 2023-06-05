@@ -175,8 +175,17 @@ connector seL4IOAPICHardwareInterrupt {
     from hardware Event;
     to Event;
 }
+/**
+ * CantripOS supports connecting multiple IRQ's to a single endpoint using
+ * the usual syntax; e.g.
+ *
+ *  connection cantripIRQ foo(from srcA, from srcB, ..., to dest);
+ *
+ * Interrupt events are always badged with a bitmask of enumerated value;
+ * e.g. for the above example, badge srcA = 1<<0, badge srcB = 1<<1, ...
+ */
 connector cantripIRQ {
-    from hardware Event;
+    from hardware Events with 0 threads;
     to Event;
     attribute string isabelle_connector_spec = "seL4HardwareInterrupt"; /* builtin connector */
 }
