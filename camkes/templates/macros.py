@@ -44,15 +44,16 @@ def thread_stack(sym, size, language='c'):
     if language == 'rust':
         page_size_bits = int(math.log(PAGE_SIZE, 2))
         return '''
-const %(sym)s_STACK_SIZE: usize = round_up(%(size)s, %(page_size)s) + (2 * %(page_size)s);
+const %(size_sym)s: usize = round_up(%(size)s, %(page_size)s) + (2 * %(page_size)s);
+#[allow(non_upper_case_globals)]
 #[repr(C, align(%(page_size)s))]
 struct %(sym)s {
-    pub data: [u8; %(sym)s_STACK_SIZE],
+    pub data: [u8; %(size_sym)s],
 }
 #[link_section = "align_%(page_size_bits)sbit"]
 #[no_mangle]
-static mut %(sym)s: %(sym)s = %(sym)s { data: [0u8; %(sym)s_STACK_SIZE] };
-''' % {"sym": sym, "size": size, "page_size": PAGE_SIZE, "page_size_bits": 12}
+static mut %(sym)s: %(sym)s = %(sym)s { data: [0u8; %(size_sym)s] };
+''' % {"sym": sym, "size_sym": sym.upper() + "_STACK_SIZE", "size": size, "page_size": PAGE_SIZE, "page_size_bits": 12}
     elif language == 'c':
         return 'char %s[ROUND_UP_UNSAFE(%d, ' \
             'PAGE_SIZE_4K) + PAGE_SIZE_4K * 2]\n' \
@@ -67,6 +68,7 @@ def ipc_buffer(sym, language='c'):
     if language == 'rust':
         page_size_bits = int(math.log(PAGE_SIZE, 2))
         return '''
+#[allow(non_upper_case_globals)]
 #[repr(C, align(%(page_size)s))]
 struct %(sym)s {
     pub data: [u8; %(page_size)s * 3],
@@ -97,6 +99,7 @@ def shared_buffer_symbol(sym, shmem_size, page_size, language='c'):
     page_size_bits = int(math.log(page_size, 2))
     if language == 'rust':
         return '''
+#[allow(non_upper_case_globals)]
 #[repr(C, align(%(page_size)s))]
 pub struct %(sym)s {
     pub data: [u8; %(shmem_size)s],

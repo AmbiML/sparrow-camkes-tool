@@ -7,13 +7,13 @@
 /*#
  *# CantripOS support.
  #*/
-use crate::baresema::*;
 use crate::camkes::*;
+use crate::camkes::baresema::*;
 #[allow(unused_imports)]
-use crate::irq::*;
+use crate::camkes::irq::*;
 #[allow(unused_imports)]
-use crate::semaphore::*;
-use crate::startup::*;
+use crate::camkes::semaphore::*;
+use crate::camkes::startup::*;
 
 const fn round_up(a: usize, b: usize) -> usize { ((a + b - 1) / b) * b }
 
@@ -66,8 +66,8 @@ pub static MEMORY_RECV_CNODE_DEPTH: u8 = /*? recv_cnode_size_bits ?*/;
     #[no_mangle]
     pub static /*? bootinfo_symbol ?*/: /*? bootinfo_struct ?*/ = /*? bootinfo_struct ?*/ { data: [0u8; /*? page_size ?*/] } ;
     #[no_mangle]
-    pub fn get_bootinfo() -> &'static seL4_BootInfo {
-        unsafe { &*(ptr::addr_of!(/*? bootinfo_symbol ?*/.data[0]) as *const seL4_BootInfo) }
+    pub fn get_bootinfo() -> &'static sel4_sys::seL4_BootInfo {
+        unsafe { &*(core::ptr::addr_of!(/*? bootinfo_symbol ?*/.data[0]) as *const sel4_sys::seL4_BootInfo) }
     }
     /*? register_shared_variable(bootinfo_symbol, bootinfo_symbol, page_size, frame_size=page_size, perm='R', language='rust') ?*/
     /*- do register_fill_frame(bootinfo_symbol, 'CDL_FrameFill_BootInfo CDL_FrameFill_BootInfo_BootInfo', page_size) -*/
@@ -132,6 +132,7 @@ static_semaphore!(/*? name ?*/);
 /*- endfor -*/
 
 // Dataports
+#[allow(dead_code)]
 pub type Buf = [u8; 4096];
 /*- for dataport in me.type.dataports -*/
   /*- set include_code = macros.include_code(composition, me, dataport) -*/
@@ -350,11 +351,11 @@ pub fn _camkes_start_rust(thread_id: sel4_sys::seL4_CPtr) -> ! {
     match thread_id {
 /*- for t in threads -*/
 /*- if loop.first -*/
-        SELF_TCB_CONTROL => /*? me.name.title().replace('_', '') ?*/ControlThread::start(thread),
+        SELF_TCB_CONTROL => crate::/*? me.name.title().replace('_', '') ?*/ControlThread::start(thread),
 /*- elif options.debug_fault_handlers and loop.last -*/
-        SELF_TCB_FAULT_HANDLER => /*? me.name.title().replace('_', '') ?*/FaultHandlerThread::start(thread),
+        SELF_TCB_FAULT_HANDLER => crate::/*? me.name.title().replace('_', '') ?*/FaultHandlerThread::start(thread),
 /*- else -*/
-        SELF_TCB_/*? t.interface.name.upper() ?*/ => /*? t.interface.name.title().replace('_', '') ?*/InterfaceThread::start(thread),
+        SELF_TCB_/*? t.interface.name.upper() ?*/ => crate::/*? t.interface.name.title().replace('_', '') ?*/InterfaceThread::start(thread),
 /*- endif -*/
 /*- endfor -*/
         _ => unreachable!(),

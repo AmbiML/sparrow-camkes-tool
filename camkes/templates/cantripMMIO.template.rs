@@ -32,6 +32,7 @@
 /*- set dataport_symbol_name = "%s" % me.interface.name.upper() -*/
 /*- set dataport_symbol_size = "%s_SIZE" % me.interface.name.upper() -*/
 const /*? dataport_symbol_size ?*/: usize = round_up(/*? macros.dataport_size(me.interface.type, language='rust') ?*/, /*? page_size ?*/);
+#[allow(clippy::upper_case_acronyms)]
 #[repr(C, align(/*? page_size ?*/))]
 pub struct /*? dataport_symbol_name ?*/ {
     pub data: [u8; /*? dataport_symbol_size ?*/],
@@ -58,5 +59,5 @@ pub const /*? dataport_symbol_name ?*/_CAPS: [sel4_sys::seL4_CPtr; /*? len(frame
 ];
 #[no_mangle]
 pub fn get_/*? me.interface.name.lower() ?*/_caps() -> &'static [sel4_sys::seL4_CPtr] {
-    unsafe { &/*? dataport_symbol_name ?*/_CAPS[..] }
+    &/*? dataport_symbol_name ?*/_CAPS[..]
 }

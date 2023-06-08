@@ -134,7 +134,7 @@ const /*? irq_prefix ?*/_HANDLER: sel4_sys::seL4_CPtr = /*? irq ?*/;
 
 /*- set ntfn_obj = alloc_obj('ntfn', seL4_NotificationObject) -*/
 /*- set root_ntfn = alloc_cap('ntfn', ntfn_obj, read=True) -*/
-const /*? ntfn_prefix ?*/_NOTIFICATION: sel4_sys::seL4_CPtr = /*? root_ntfn ?*/;
+pub const /*? ntfn_prefix ?*/_NOTIFICATION: sel4_sys::seL4_CPtr = /*? root_ntfn ?*/;
 
 /*- for (i, end) in enumerate(me.parent.from_ends) -*/
     /*- set irq_prefix = end.interface.name.upper() -*/
