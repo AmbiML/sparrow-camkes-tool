@@ -17,10 +17,10 @@ pub fn /*? me.interface.name ?*/_emit(
     badge: sel4_sys::seL4_Word,
 ) {
     match badge {
-    /*- for c in me.parent.from_ends -*/
+    /*- for (i, c) in enumerate(me.parent.from_ends) -*/
         /*- do allocate_cap(c, is_reader=False) -*/
         /*- set notification = pop('notification') -*/
-        /*? badges[loop.index0] ?*/ => unsafe { sel4_sys::seL4_Signal(/*? notification ?*/) },
+        /*? badges[i] ?*/ => unsafe { sel4_sys::seL4_Signal(/*? notification ?*/) },
     /*- endfor -*/
         _ => unreachable!(),
     }

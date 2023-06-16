@@ -239,7 +239,6 @@ RequireFile(CONFIGURE_FILE_SCRIPT configure_file.cmake PATHS ${CMAKE_MODULE_PATH
                 set(connector_target CAmkESConnector_/*? c.type.name ?*/)
                 get_property(c_from_template TARGET ${connector_target} PROPERTY CONNECTOR_FROM)
                 /*- if configuration[i.name].get('cantripos') -*/
-message("CANTRIP FROM CONNECTOR: " ${unique_name})
                     CAmkESGen("${generated_dir}/${unique_name}.rs" connector//*? c.name ?*//from//*? id ?*/ ${c_from_template} SOURCE)
                     get_property(c_from_libs TARGET ${connector_target} PROPERTY CONNECTOR_FROM_LIBS)
                     list(APPEND extra_libs ${c_from_libs})
@@ -270,11 +269,9 @@ message("CANTRIP FROM CONNECTOR: " ${unique_name})
                         CAmkESGen("${generated_dir}/${unique_name}.c" connector//*? c.name ?*//to//*? id ?*/ ${c_to_template} SOURCE C_STYLE)
                     endif()
                 /*- elif configuration[i.name].get('cantripos') -*/
-message("CANTRIP TO CONNECTOR: " ${unique_name})
                     get_property(c_to_template TARGET ${connector_target} PROPERTY CONNECTOR_TO)
                     CAmkESGen("${generated_dir}/${unique_name}.rs" connector//*? c.name ?*//to//*? id ?*/ ${c_to_template} SOURCE)
                 /*- else -*/
-#message("BASE TO CONNECTOR: " ${unique_name})
                     get_property(c_to_template TARGET ${connector_target} PROPERTY CONNECTOR_TO)
                     CAmkESGen("${generated_dir}/${unique_name}.c" connector//*? c.name ?*//to//*? id ?*/ ${c_to_template} SOURCE C_STYLE)
                     get_property(c_to_template_header TARGET ${connector_target} PROPERTY CONNECTOR_TO_HEADER)
@@ -346,7 +343,6 @@ message("CANTRIP TO CONNECTOR: " ${unique_name})
     if (NOT "${link_language}" STREQUAL "")
         set_property(TARGET ${target} PROPERTY LINKER_LANGUAGE ${link_language})
     endif()
-message("COMPONENT " ${target} " LANGUAGE " ${link_language} " SOURCES " ${static_sources} ${gen_sources})
     # Build any CakeML library
     if (NOT ("${cakeml_sources}" STREQUAL ""))
         # Pull heap/stack size from component expression OR instances expression OR default to an arbitrary 50

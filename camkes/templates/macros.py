@@ -393,8 +393,6 @@ def threads(composition, instance, configuration, options):
                                                    end.interface.name, options.default_stack_size)
                     if configuration.get('%s_has_thread' % end.interface, True):
                         ts.append(Thread(name, end.interface, x, stack_size))
-                    else:
-                        print('DISABLE thread', name, 'for FROM', end.interface)
         for end in connection.to_ends:
             if end.instance == instance:
                 for x in six.moves.range(connection.type.to_threads):
@@ -403,8 +401,6 @@ def threads(composition, instance, configuration, options):
                                                    end.interface.name, options.default_stack_size)
                     if configuration.get('%s_has_thread' % end.interface, True):
                         ts.append(Thread(name, end.interface, x, stack_size))
-                    else:
-                        print('DISABLE thread', name, 'for TO', end.interface)
 
     if options.debug_fault_handlers:
         # Last thread is fault handler thread
