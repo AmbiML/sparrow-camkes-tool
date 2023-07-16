@@ -21,9 +21,10 @@
 /*- if not isinstance(size, numbers.Integral) or size <= 0 -*/
   /*? raise(TemplateError('Setting %s.%s_size that should specify the size of an MMIO device does not appear to be a valid size' % (me.parent.to_instance.name, me.parent.to_interface.name))) ?*/
 /*- endif -*/
+/*- set size = max(size, 4096) -*/
 /*- set page_size = macros.get_page_size(size, options.architecture) -*/
 /*- if page_size == 0 -*/
-  /*? raise(TemplateError('Setting %s.%s_size does not meet minimum size requirements. %d must be at least %d and %d aligned' % (me.parent.to_instance.name, me.parent.to_interface.name, size, 4096, 4096))) ?*/
+  /*? raise(TemplateError('Setting %s.%s_size must be page-aligned' % (me.parent.to_instance.name, me.parent.to_interface.name))) ?*/
 /*- endif -*/
 /*- set page_size_bits = int(math.log(page_size, 2)) -*/
 
